@@ -6,3 +6,9 @@ type Person struct {
 	Gender string
 	Age    int
 }
+
+// Res defines the fake get request type
+type Res struct {
+	Data string `json:"data"`
+	Code int    `json:"code"`
+}
