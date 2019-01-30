@@ -9,10 +9,10 @@ import (
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/fake", feature1.PersonHandler)
-	mux.HandleFunc("/api/register", register.RegisterHandler)
+	mux.HandleFunc("/api/fake", feature1.Handler)
+	mux.HandleFunc("/api/register", register.Handler)
 
-	log.Println("Listening on port 8080 ...")
-	err := http.ListenAndServe(":8080", mux)
+	log.Println("Listening on port 8081 ...")
+	err := http.ListenAndServe(":8081", mux)
 	log.Fatal(err)
 }
