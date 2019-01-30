@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-// PersonHandler to handle the fake get request and db op
-func PersonHandler(w http.ResponseWriter, r *http.Request) {
+// Handler to handle the fake get request and db op
+func Handler(w http.ResponseWriter, r *http.Request) {
 	s := fmt.Sprintf("Hello World, %s! You are %s, and %d years old", GetPerson().Name, GetPerson().Gender, GetPerson().Age)
 	var res = Res{s, 200}
 
@@ -18,7 +18,7 @@ func PersonHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, string(result))
 
-	db := utils.InitialDb("tianzhi:tianzhi@tcp(47.94.223.143:3306)/pcs")
+	db := utils.InitialDb()
 
 	rows, err := db.Query("select username, password, phone from user")
 	utils.CheckErr(err)
