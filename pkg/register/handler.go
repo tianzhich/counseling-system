@@ -8,6 +8,11 @@ import (
 	"net/http"
 )
 
+type result struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 // Handler to handle the req for registration
 func Handler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
@@ -37,6 +42,7 @@ func registerUser(form Form) string {
 	var pwd = form.Password
 	var phone = form.Phone
 	var email = form.Email
+	var registerRes result
 
 	var queryStr string
 	var insertStr = "insert user set username=?, password=?, phone=?, email=?"
@@ -53,9 +59,11 @@ func registerUser(form Form) string {
 	utils.CheckErr(repeatErr)
 
 	if existRows.Next() {
-		return "邮箱或手机号已被注册，可直接登录"
+		registerRes.Code = 0
+		registerRes.Message = "邮箱或手机号已被注册，可直接登录"
 	} else if repeatRows.Next() {
-		return "用户名已被注册"
+		registerRes.Code = 0
+		registerRes.Message = "用户名已被注册"
 	} else {
 		stmt, err := db.Prepare(insertStr)
 		utils.CheckErr(err)
@@ -66,8 +74,14 @@ func registerUser(form Form) string {
 
 		rows, _ := res.RowsAffected()
 		if rows == 1 {
-			return "注册成功"
+			registerRes.Code = 1
+			registerRes.Message = "注册成功"
+		} else {
+			registerRes.Code = -1
+			registerRes.Message = "数据库连接错误！"
 		}
-		return "注册失败，请稍后重试"
 	}
+
+	resJSON, _ := json.Marshal(registerRes)
+	return string(resJSON)
 }
