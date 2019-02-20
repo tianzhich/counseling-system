@@ -15,13 +15,6 @@ type result struct {
 
 // SignupHandler to handle the req for signup
 func SignupHandler(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	utils.AllowCors(&w)
-
-	if r.Method == "OPTIONS" {
-		return
-	}
-
 	if r.Method == "POST" {
 		res, _ := ioutil.ReadAll(r.Body)
 
@@ -34,7 +27,6 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
-
 }
 
 func registerUser(form SignupForm) string {
