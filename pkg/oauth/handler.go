@@ -1,4 +1,4 @@
-package register
+package oauth
 
 import (
 	"counseling-system/pkg/utils"
@@ -13,8 +13,8 @@ type result struct {
 	Message string `json:"message"`
 }
 
-// Handler to handle the req for registration
-func Handler(w http.ResponseWriter, r *http.Request) {
+// SignupHandler to handle the req for signup
+func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	utils.AllowCors(&w)
 
@@ -25,7 +25,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		res, _ := ioutil.ReadAll(r.Body)
 
-		var formData Form
+		var formData SignupForm
 		err := json.Unmarshal(res, &formData)
 		utils.CheckErr(err)
 
@@ -37,7 +37,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func registerUser(form Form) string {
+func registerUser(form SignupForm) string {
 	var username = form.Username
 	var pwd = form.Password
 	var phone = form.Phone
