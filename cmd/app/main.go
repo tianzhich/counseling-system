@@ -20,4 +20,6 @@ func main() {
 
 func oauthHandler(mux *http.ServeMux) {
 	mux.HandleFunc("/api/signup", oauth.SignupHandler)
+	mux.HandleFunc("/api/signin", oauth.SigninHandler)
+	mux.HandleFunc("/api/auth", oauth.AuthHandler)
 }
