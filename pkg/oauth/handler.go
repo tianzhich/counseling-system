@@ -169,3 +169,12 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	// Print secret message
 	fmt.Fprintln(w, string(resJSON))
 }
+
+// SignoutHandler to handle the signout
+func SignoutHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := utils.Store.Get(r, "user_session")
+
+	// Revoke user authentication
+	session.Values["auth"] = false
+	session.Save(r, w)
+}

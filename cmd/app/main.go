@@ -22,4 +22,5 @@ func oauthHandler(mux *http.ServeMux) {
 	mux.HandleFunc("/api/oauth/signup", oauth.SignupHandler)
 	mux.HandleFunc("/api/oauth/signin", oauth.SigninHandler)
 	mux.HandleFunc("/api/oauth/auth", oauth.AuthHandler)
+	mux.HandleFunc("/api/oauth/signout", oauth.SignoutHandler)
 }
