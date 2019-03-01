@@ -1,9 +1,7 @@
 package utils
 
 import (
-	"database/sql"
-
-	_ "github.com/go-sql-driver/mysql" // mysql driver
+	"net/http"
 )
 
 // CheckErr to check err like db, file operation
@@ -13,10 +11,11 @@ func CheckErr(err error) {
 	}
 }
 
-// InitialDb initail the db connection and return the db instance
-func InitialDb() *sql.DB {
-	mydbcon := dataSourceName
-	db, err := sql.Open("mysql", mydbcon)
-	CheckErr(err)
-	return db
+// IsUserLogin to check the user auth
+func IsUserLogin(r *http.Request) bool {
+	sessions, _ := Store.Get(r, "user_session")
+	if auth, ok := sessions.Values["auth"].(bool); !ok || !auth {
+		return false
+	}
+	return true
 }
