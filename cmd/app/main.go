@@ -1,7 +1,6 @@
 package main
 
 import (
-	"counseling-system/pkg/feature1"
 	"counseling-system/pkg/info"
 	"counseling-system/pkg/oauth"
 
@@ -11,8 +10,8 @@ import (
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/fake", feature1.Handler)
 
+	// API handler
 	oauthHandler(mux)
 	infoHandler(mux)
 
