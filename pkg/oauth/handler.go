@@ -10,11 +10,6 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-type result struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-}
-
 // SignupHandler to handle the req for signup
 func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
@@ -24,19 +19,22 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		err := json.Unmarshal(res, &formData)
 		utils.CheckErr(err)
 
-		result := registerUser(formData)
-		fmt.Fprintf(w, result)
+		result, success := registerUser(formData)
+		if success {
+			fmt.Fprintf(w, result)
+		}
+
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 }
 
-func registerUser(form SignupForm) string {
+func registerUser(form SignupForm) (string, bool) {
 	var username = form.Username
 	var pwd = form.Password
 	var phone = form.Phone
 	var email = form.Email
-	var registerRes result
+	var r utils.Response
 
 	var queryStr string
 	var insertStr = "insert user set username=?, password=?, phone=?, email=?"
@@ -48,23 +46,23 @@ func registerUser(form SignupForm) string {
 	repeatRows := utils.QueryDB(queryStr)
 
 	if existRows.Next() {
-		registerRes.Code = 0
-		registerRes.Message = "邮箱或手机号已被注册，可直接登录"
+		r.Code = 0
+		r.Message = "邮箱或手机号已被注册，可直接登录"
 	} else if repeatRows.Next() {
-		registerRes.Code = 0
-		registerRes.Message = "用户名已被注册"
+		r.Code = 0
+		r.Message = "用户名已被注册"
 	} else {
-		if utils.InsertDB(insertStr, username, pwd, phone, email) {
-			registerRes.Code = 1
-			registerRes.Message = "注册成功"
+		if _, status := utils.InsertDB(insertStr, username, pwd, phone, email); status {
+			r.Code = 1
+			r.Message = "注册成功"
 		} else {
-			registerRes.Code = -1
-			registerRes.Message = "数据库连接错误！"
+			fmt.Println("新增用户失败，数据库插入错误！")
+			return "", false
 		}
 	}
 
-	resJSON, _ := json.Marshal(registerRes)
-	return string(resJSON)
+	resJSON, _ := json.Marshal(r)
+	return string(resJSON), true
 }
 
 // SigninHandler to handle the request form signin
@@ -110,11 +108,11 @@ func SigninHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func signin(form SigninForm) (result, int) {
+func signin(form SigninForm) (utils.Response, int) {
 	var expectedPwd string
 	var username = form.Username
 	var pwd = form.Password
-	var res result
+	var r utils.Response
 
 	var uid int
 
@@ -122,27 +120,27 @@ func signin(form SigninForm) (result, int) {
 	rows := utils.QueryDB(queryStr)
 
 	if !rows.Next() {
-		res.Code = 0
-		res.Message = "用户名或密码错误"
+		r.Code = 0
+		r.Message = "用户名或密码错误"
 		uid = -1
 	} else {
 		err := rows.Scan(&expectedPwd, &uid)
 		utils.CheckErr(err)
 		if expectedPwd != pwd {
-			res.Code = 0
-			res.Message = "用户名或密码错误"
+			r.Code = 0
+			r.Message = "用户名或密码错误"
 			uid = -1
 		} else {
-			res.Code = 1
-			res.Message = "login success!"
+			r.Code = 1
+			r.Message = "login success!"
 		}
 	}
-	return res, uid
+	return r, uid
 }
 
 // AuthHandler to check if a user is logged in
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
-	var res result
+	var res utils.Response
 
 	// Check if user is authenticated
 	if !utils.IsUserLogin(r) {
@@ -178,45 +176,47 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 		utils.CheckErr(err)
 
 		if !utils.IsUserLogin(r) {
-			var result = result{Code: -1, Message: "用户未登录，无法执行操作！"}
+			var result = utils.Response{Code: -1, Message: "用户未登录，无法执行操作！"}
 			resJSON, _ := json.Marshal(result)
 			fmt.Fprintf(w, string(resJSON))
 			return
 		}
 
-		resJSON := applyConsultant(formData, utils.GetUserID(r))
-		fmt.Fprintln(w, string(resJSON))
+		resJSON, success := applyConsultant(formData, utils.GetUserID(r))
+		if success {
+			fmt.Fprintln(w, string(resJSON))
+		}
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 }
 
-func applyConsultant(form ApplyForm, uid int) string {
+func applyConsultant(form ApplyForm, uid int) (string, bool) {
 	var queryStr = fmt.Sprintf("select * from `consultant` where `u_id` ='%v'", uid)
 	var insertStr = "insert consultant set name=?, gender=?, description=?, work_years=?, motto=?, audio_price=?, video_price=?, ftf_price=?, u_id=?"
-	var applyRes result
+	var applyRes utils.Response
 
 	existRows := utils.QueryDB(queryStr)
 	if existRows.Next() {
 		applyRes.Code = 0
 		applyRes.Message = "账户已绑定咨询师，可直接登录"
 	} else {
-		if utils.InsertDB(insertStr, form.Name, form.Gender, form.Description, form.WorkYears, form.Motto, form.AudioPrice, form.VideoPrice, form.FtfPrice, uid) {
+		if _, status := utils.InsertDB(insertStr, form.Name, form.Gender, form.Description, form.WorkYears, form.Motto, form.AudioPrice, form.VideoPrice, form.FtfPrice, uid); status {
 			applyRes.Code = 1
 			applyRes.Message = "注册成功"
-			handleApplyCity(form.City)
+			handleApplyCity(form.City, uid)
 		} else {
-			applyRes.Code = -1
-			applyRes.Message = "数据库连接错误，请稍后重试！"
+			fmt.Println("新增咨询师失败，数据库插入错误！")
+			return "", false
 		}
 	}
 
 	resJSON, _ := json.Marshal(applyRes)
-	return string(resJSON)
+	return string(resJSON), true
 }
 
 // 面对面咨询城市的判断处理
-func handleApplyCity(city string) {
+func handleApplyCity(city string, uid int) {
 	var queryStr = fmt.Sprintf("select * from dict_info where `type_code`=8 and `info_name`='%v'", city)
 	existRows := utils.QueryDB(queryStr)
 
@@ -225,9 +225,12 @@ func handleApplyCity(city string) {
 	}
 
 	cid := utils.QueryDBRow("select count(*) from dict_info where `type_code`=8") + 1
-	if utils.InsertDB("insert dict_info set typecode=?, info_code=?, info_name=?", 8, cid, city) {
-		return
+	if rowID, status := utils.InsertDB("insert dict_info set typecode=?, info_code=?, info_name=?", 8, cid, city); status {
+		updateStr := fmt.Sprintf("update consultant set city=? where u_id='%v'", uid)
+		if updateStatus := utils.UpdateDB(updateStr, rowID); updateStatus {
+			return
+		}
+	} else {
+		fmt.Println("新增咨询城市出错！")
 	}
-
-	fmt.Println("新增咨询城市出错！")
 }
