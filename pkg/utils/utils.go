@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -11,11 +12,19 @@ func CheckErr(err error) {
 	}
 }
 
-// IsUserLogin to check the user auth
-func IsUserLogin(r *http.Request) bool {
+// IsUserLogin to check the user auth and return the user type if user logged in
+func IsUserLogin(r *http.Request) (bool, int) {
 	sessions, _ := Store.Get(r, "user_session")
 	if auth, ok := sessions.Values["auth"].(bool); !ok || !auth {
-		return false
+		return false, -1
 	}
-	return true
+
+	// queryUserType
+	var userType = -1
+	uid := GetUserID(r)
+	rows := QueryDB(fmt.Sprintf("select type from user where id='%v'", uid))
+	if rows.Next() {
+		rows.Scan(&userType)
+	}
+	return true, userType
 }

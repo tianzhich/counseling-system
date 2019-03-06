@@ -10,6 +10,10 @@ import (
 	"github.com/gorilla/sessions"
 )
 
+type authData struct {
+	UserType int `json:"userType"`
+}
+
 // SignupHandler to handle the req for signup
 func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
@@ -37,7 +41,7 @@ func registerUser(form SignupForm) (string, bool) {
 	var r utils.Response
 
 	var queryStr string
-	var insertStr = "insert user set username=?, password=?, phone=?, email=?"
+	var insertStr = "insert user set username=?, password=?, phone=?, email=?, type=?"
 
 	queryStr = fmt.Sprintf("select * from user where phone='%v' or email='%v'", phone, email)
 	existRows := utils.QueryDB(queryStr)
@@ -52,7 +56,7 @@ func registerUser(form SignupForm) (string, bool) {
 		r.Code = 0
 		r.Message = "用户名已被注册"
 	} else {
-		if _, status := utils.InsertDB(insertStr, username, pwd, phone, email); status {
+		if _, status := utils.InsertDB(insertStr, username, pwd, phone, email, 2); status {
 			r.Code = 1
 			r.Message = "注册成功"
 		} else {
@@ -143,12 +147,14 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	var res utils.Response
 
 	// Check if user is authenticated
-	if !utils.IsUserLogin(r) {
+	isLoggedin, userType := utils.IsUserLogin(r)
+	if !isLoggedin {
 		res.Code = 0
 		res.Message = "用户未登录"
 	} else {
 		res.Code = 1
 		res.Message = "用户已登录"
+		res.Data = authData{UserType: userType}
 	}
 
 	resJSON, _ := json.Marshal(res)
@@ -175,7 +181,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 		err := json.Unmarshal(res, &formData)
 		utils.CheckErr(err)
 
-		if !utils.IsUserLogin(r) {
+		if isLoggedin, _ := utils.IsUserLogin(r); !isLoggedin {
 			var result = utils.Response{Code: -1, Message: "用户未登录，无法执行操作！"}
 			resJSON, _ := json.Marshal(result)
 			fmt.Fprintf(w, string(resJSON))
@@ -205,6 +211,7 @@ func applyConsultant(form ApplyForm, uid int) (string, bool) {
 			applyRes.Code = 1
 			applyRes.Message = "注册成功"
 			handleApplyCity(form.City, uid)
+			handleApplyUserType(uid)
 		} else {
 			fmt.Println("新增咨询师失败，数据库插入错误！")
 			return "", false
@@ -217,6 +224,10 @@ func applyConsultant(form ApplyForm, uid int) (string, bool) {
 
 // 面对面咨询城市的判断处理
 func handleApplyCity(city string, uid int) {
+	if city == "" {
+		return
+	}
+
 	var queryStr = fmt.Sprintf("select * from dict_info where `type_code`=8 and `info_name`='%v'", city)
 	existRows := utils.QueryDB(queryStr)
 
@@ -232,5 +243,13 @@ func handleApplyCity(city string, uid int) {
 		}
 	} else {
 		fmt.Println("新增咨询城市出错！")
+	}
+}
+
+// 修改用户类型
+func handleApplyUserType(uid int) {
+	var updateStr = fmt.Sprintf("update user set type=? where id='%v'", uid)
+	if !utils.UpdateDB(updateStr, 1) {
+		fmt.Println("新增咨询师，修改用户类型出错！")
 	}
 }
