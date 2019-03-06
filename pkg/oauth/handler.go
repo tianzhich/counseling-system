@@ -225,7 +225,7 @@ func handleApplyCity(city string, uid int) {
 	}
 
 	cid := utils.QueryDBRow("select count(*) from dict_info where `type_code`=8") + 1
-	if rowID, status := utils.InsertDB("insert dict_info set typecode=?, info_code=?, info_name=?", 8, cid, city); status {
+	if rowID, status := utils.InsertDB("insert dict_info set type_code=?, info_code=?, info_name=?", 8, cid, city); status {
 		updateStr := fmt.Sprintf("update consultant set city=? where u_id='%v'", uid)
 		if updateStatus := utils.UpdateDB(updateStr, rowID); updateStatus {
 			return
