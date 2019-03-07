@@ -172,7 +172,7 @@ func SignoutHandler(w http.ResponseWriter, r *http.Request) {
 	session.Save(r, w)
 }
 
-// ApplyHandler to handle the apply for consultant
+// ApplyHandler to handle the apply for counselor
 func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		res, _ := ioutil.ReadAll(r.Body)
@@ -188,7 +188,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		resJSON, success := applyConsultant(formData, utils.GetUserID(r))
+		resJSON, success := applyCounselor(formData, utils.GetUserID(r))
 		if success {
 			fmt.Fprintln(w, string(resJSON))
 		}
@@ -197,9 +197,9 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func applyConsultant(form ApplyForm, uid int) (string, bool) {
-	var queryStr = fmt.Sprintf("select * from `consultant` where `u_id` ='%v'", uid)
-	var insertStr = "insert consultant set name=?, gender=?, description=?, work_years=?, motto=?, audio_price=?, video_price=?, ftf_price=?, u_id=?"
+func applyCounselor(form ApplyForm, uid int) (string, bool) {
+	var queryStr = fmt.Sprintf("select * from `counselor` where `u_id` ='%v'", uid)
+	var insertStr = "insert counselor set name=?, gender=?, description=?, work_years=?, motto=?, audio_price=?, video_price=?, ftf_price=?, u_id=?"
 	var applyRes utils.Response
 
 	existRows := utils.QueryDB(queryStr)
@@ -237,7 +237,7 @@ func handleApplyCity(city string, uid int) {
 
 	cid := utils.QueryDBRow("select count(*) from dict_info where `type_code`=8") + 1
 	if rowID, status := utils.InsertDB("insert dict_info set type_code=?, info_code=?, info_name=?", 8, cid, city); status {
-		updateStr := fmt.Sprintf("update consultant set city=? where u_id='%v'", uid)
+		updateStr := fmt.Sprintf("update counselor set city=? where u_id='%v'", uid)
 		if updateStatus := utils.UpdateDB(updateStr, rowID); updateStatus {
 			return
 		}

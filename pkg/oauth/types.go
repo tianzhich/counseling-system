@@ -14,8 +14,8 @@ type SigninForm struct {
 	Password string `json:"password"`
 }
 
-// ConsultantDetail xxx
-type ConsultantDetail struct {
+// counselorDetail xxx
+type counselorDetail struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
 }
@@ -27,7 +27,7 @@ type ApplyForm struct {
 	WorkYears   int                `json:"workYears"`
 	Description string             `json:"description"`
 	Motto       string             `json:"motto"`
-	Detail      []ConsultantDetail `json:"detail"`
+	Detail      []counselorDetail `json:"detail"`
 	AudioPrice  int                `json:"audioPrice"`
 	VideoPrice  int                `json:"videoPrice"`
 	FtfPrice    int                `json:"ftfPrice"`
