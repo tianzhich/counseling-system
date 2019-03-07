@@ -29,5 +29,5 @@ func oauthHandler(mux *http.ServeMux) {
 }
 
 func infoHandler(mux *http.ServeMux) {
-	mux.HandleFunc("/api/info/pre", info.PreHandler)
+	mux.HandleFunc("/api/info/counselingFilters", info.CounselorFilterHandler)
 }

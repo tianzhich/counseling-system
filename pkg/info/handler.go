@@ -7,27 +7,17 @@ import (
 	"net/http"
 )
 
-// PreHandler to get the pre infomation
-func PreHandler(w http.ResponseWriter, r *http.Request) {
-	var preInfo PreInfo
-	preInfo.Cities = getAllCity()
+// CounselorFilterHandler get all filters about counselor
+func CounselorFilterHandler(w http.ResponseWriter, r *http.Request) {
+	var res utils.Response
+	var cities = getDictInfo(8)
+	var methods = getDictInfo(10)
+	var topics = getDictInfo(4)
 
-	resJSON, _ := json.Marshal(preInfo)
+	res.Code = 1
+	res.Message = "ok"
+	res.Data = filter{Topic: topics, City: cities, Method: methods}
 
+	resJSON, _ := json.Marshal(res)
 	fmt.Fprintln(w, string(resJSON))
-}
-
-func getAllCity() []City {
-	var cities []City
-
-	rows := utils.QueryDB("select id, name from city")
-	for i := 0; rows.Next(); i++ {
-		var city City
-
-		err := rows.Scan(&city.CityID, &city.CityName)
-		utils.CheckErr(err)
-		cities = append(cities, city)
-	}
-
-	return cities
 }

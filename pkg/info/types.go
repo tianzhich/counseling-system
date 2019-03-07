@@ -1,12 +1,13 @@
 package info
 
-// City struct
-type City struct {
-	CityID   int    `json:"cityId"`
-	CityName string `json:"cityName"`
+// dictInfo struct includes City, CounselingMethod,
+type dictInfo struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
-// PreInfo xxx
-type PreInfo struct {
-	Cities []City `json:"cities"`
+type filter struct {
+	Topic  []dictInfo `json:"topic"`
+	Method []dictInfo `json:"method"`
+	City   []dictInfo `json:"city"`
 }
