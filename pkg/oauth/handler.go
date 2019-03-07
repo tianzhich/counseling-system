@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"counseling-system/pkg/common"
 	"counseling-system/pkg/utils"
 	"encoding/json"
 	"fmt"
@@ -38,7 +39,7 @@ func registerUser(form SignupForm) (string, bool) {
 	var pwd = form.Password
 	var phone = form.Phone
 	var email = form.Email
-	var r utils.Response
+	var r common.Response
 
 	var queryStr string
 	var insertStr = "insert user set username=?, password=?, phone=?, email=?, type=?"
@@ -112,11 +113,11 @@ func SigninHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func signin(form SigninForm) (utils.Response, int) {
+func signin(form SigninForm) (common.Response, int) {
 	var expectedPwd string
 	var username = form.Username
 	var pwd = form.Password
-	var r utils.Response
+	var r common.Response
 
 	var uid int
 
@@ -144,10 +145,10 @@ func signin(form SigninForm) (utils.Response, int) {
 
 // AuthHandler to check if a user is logged in
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
-	var res utils.Response
+	var res common.Response
 
 	// Check if user is authenticated
-	isLoggedin, userType := utils.IsUserLogin(r)
+	isLoggedin, userType := common.IsUserLogin(r)
 	if !isLoggedin {
 		res.Code = 0
 		res.Message = "用户未登录"
@@ -181,14 +182,14 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 		err := json.Unmarshal(res, &formData)
 		utils.CheckErr(err)
 
-		if isLoggedin, _ := utils.IsUserLogin(r); !isLoggedin {
-			var result = utils.Response{Code: -1, Message: "用户未登录，无法执行操作！"}
+		if isLoggedin, _ := common.IsUserLogin(r); !isLoggedin {
+			var result = common.Response{Code: -1, Message: "用户未登录，无法执行操作！"}
 			resJSON, _ := json.Marshal(result)
 			fmt.Fprintf(w, string(resJSON))
 			return
 		}
 
-		resJSON, success := applyCounselor(formData, utils.GetUserID(r))
+		resJSON, success := applyCounselor(formData, common.GetUserID(r))
 		if success {
 			fmt.Fprintln(w, string(resJSON))
 		}
@@ -200,7 +201,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 func applyCounselor(form ApplyForm, uid int) (string, bool) {
 	var queryStr = fmt.Sprintf("select * from `counselor` where `u_id` ='%v'", uid)
 	var insertStr = "insert counselor set name=?, gender=?, description=?, work_years=?, motto=?, audio_price=?, video_price=?, ftf_price=?, u_id=?"
-	var applyRes utils.Response
+	var applyRes common.Response
 
 	existRows := utils.QueryDB(queryStr)
 	if existRows.Next() {

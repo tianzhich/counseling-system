@@ -1,7 +1,7 @@
 package info
 
 import (
-	"counseling-system/pkg/utils"
+	"counseling-system/pkg/common"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,10 +9,10 @@ import (
 
 // CounselorFilterHandler get all filters about counselor
 func CounselorFilterHandler(w http.ResponseWriter, r *http.Request) {
-	var res utils.Response
-	var cities = getDictInfo(8)
-	var methods = getDictInfo(10)
-	var topics = getDictInfo(4)
+	var res common.Response
+	var cities = common.GetAllDictInfoByTypeCode(8)
+	var methods = common.GetAllDictInfoByTypeCode(10)
+	var topics = common.GetAllDictInfoByTypeCode(4)
 
 	res.Code = 1
 	res.Message = "ok"
