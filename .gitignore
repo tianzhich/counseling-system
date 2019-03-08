@@ -1,5 +1,2 @@
 ## main exec file
 /cmd/app/app
-
-## my db dsn
-/pkg/utils/db.go
