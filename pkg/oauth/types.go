@@ -22,14 +22,18 @@ type counselorDetail struct {
 
 // ApplyForm xxx
 type ApplyForm struct {
-	Name        string             `json:"name"`
-	Gender      int                `json:"gender"`
-	WorkYears   int                `json:"workYears"`
-	Description string             `json:"description"`
-	Motto       string             `json:"motto"`
+	Name        string            `json:"name"`
+	Gender      int               `json:"gender"`
+	WorkYears   int               `json:"workYears"`
+	Description string            `json:"description"`
+	Motto       string            `json:"motto"`
 	Detail      []counselorDetail `json:"detail"`
-	AudioPrice  int                `json:"audioPrice"`
-	VideoPrice  int                `json:"videoPrice"`
-	FtfPrice    int                `json:"ftfPrice"`
-	City        string             `json:"city"`
+	AudioPrice  int               `json:"audioPrice"`
+	VideoPrice  int               `json:"videoPrice"`
+	FtfPrice    int               `json:"ftfPrice"`
+	City        string            `json:"city"`
+}
+
+type authData struct {
+	UserType int `json:"userType"`
 }
