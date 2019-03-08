@@ -32,6 +32,8 @@ type ApplyForm struct {
 	VideoPrice  int               `json:"videoPrice"`
 	FtfPrice    int               `json:"ftfPrice"`
 	City        string            `json:"city"`
+	Topic       string            `json:"topic"`
+	OtherTopic  string            `json:"otherTopic"`
 }
 
 type authData struct {

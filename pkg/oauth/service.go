@@ -15,7 +15,7 @@ func registerUser(form SignupForm) (string, bool) {
 	var r common.Response
 
 	var queryStr string
-	var insertStr = "insert user set username=?, password=?, phone=?, email=?, type=?"
+	var insertStr = "insert user set username=?, password=?, phone=?, email=?"
 
 	queryStr = fmt.Sprintf("select * from user where phone='%v' or email='%v'", phone, email)
 	existRows := utils.QueryDB(queryStr)
@@ -30,7 +30,7 @@ func registerUser(form SignupForm) (string, bool) {
 		r.Code = 0
 		r.Message = "用户名已被注册"
 	} else {
-		if _, status := utils.InsertDB(insertStr, username, pwd, phone, email, 2); status {
+		if _, status := utils.InsertDB(insertStr, username, pwd, phone, email); status {
 			r.Code = 1
 			r.Message = "注册成功"
 		} else {
@@ -88,6 +88,7 @@ func applyCounselor(form ApplyForm, uid int) (string, bool) {
 			applyRes.Message = "注册成功"
 			handleApplyCity(form.City, uid)
 			handleApplyUserType(uid)
+			handleApplyTopic(form.Topic, form.OtherTopic, uid)
 		} else {
 			fmt.Println("新增咨询师失败，数据库插入错误！")
 			return "", false
@@ -98,7 +99,7 @@ func applyCounselor(form ApplyForm, uid int) (string, bool) {
 	return string(resJSON), true
 }
 
-// 面对面咨询城市的判断处理
+// 咨询师入驻 -> 面对面咨询城市的判断处理
 func handleApplyCity(city string, uid int) {
 	if city == "" {
 		return
@@ -122,10 +123,26 @@ func handleApplyCity(city string, uid int) {
 	}
 }
 
-// 修改用户类型
+// 咨询师入驻 -> 修改用户类型
 func handleApplyUserType(uid int) {
 	var updateStr = fmt.Sprintf("update user set type=? where id='%v'", uid)
 	if !utils.UpdateDB(updateStr, 1) {
 		fmt.Println("新增咨询师，修改用户类型出错！")
+	}
+}
+
+// 咨询师入驻 -> 咨询主题(领域)处理
+func handleApplyTopic(topic string, otherTopic string, uid int) {
+	var queryStr = fmt.Sprintf("select id from dict_info where type_code=4 and info_name='%v'", topic)
+	var tid int
+
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Scan(&tid)
+		updateStr := fmt.Sprintf("update counselor set topic=?, topic_other=? where u_id='%v'", uid)
+		if success := utils.UpdateDB(updateStr, tid, otherTopic); success {
+			return
+		}
+		fmt.Println("新增咨询师，修改咨询主题出错！")
 	}
 }
