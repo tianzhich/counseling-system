@@ -7,12 +7,14 @@ import (
 	"fmt"
 )
 
-func registerUser(form SignupForm) (string, bool) {
+func signup(form SignupForm) (common.Response, int) {
 	var username = form.Username
 	var pwd = form.Password
 	var phone = form.Phone
 	var email = form.Email
 	var r common.Response
+
+	var uid int64 = -1
 
 	var queryStr string
 	var insertStr = "insert user set username=?, password=?, phone=?, email=?"
@@ -30,17 +32,20 @@ func registerUser(form SignupForm) (string, bool) {
 		r.Code = 0
 		r.Message = "用户名已被注册"
 	} else {
-		if _, status := utils.InsertDB(insertStr, username, pwd, phone, email); status {
+		var success bool
+		uid, success = utils.InsertDB(insertStr, username, pwd, phone, email)
+		if success {
 			r.Code = 1
 			r.Message = "注册成功"
 		} else {
 			fmt.Println("新增用户失败，数据库插入错误！")
-			return "", false
+			r.Code = -1
+			r.Message = "数据库错误"
+			uid = -1
 		}
 	}
 
-	resJSON, _ := json.Marshal(r)
-	return string(resJSON), true
+	return r, int(uid)
 }
 
 func signin(form SigninForm) (common.Response, int) {
