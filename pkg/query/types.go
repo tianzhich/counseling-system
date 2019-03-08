@@ -1,5 +1,9 @@
 package query
 
+import (
+	"counseling-system/pkg/common"
+)
+
 // pagination 表示分页属性
 type pagination struct {
 	pageNum  int
@@ -16,16 +20,17 @@ type filterOption struct {
 
 // counselor list
 type counselor struct {
-	UID         int    `json:"uid"`
-	Name        int    `json:"name"`
-	Gender      int    `json:"gender"`
-	Description string `json:"description"`
-	WorkYears   int    `json:"workYears"`
-	GoodRate    int    `json:"goodRate"`
-	Motto       string `json:"motto"`
-	AudioPrice  int    `json:"audioPrice"`
-	VideoPrice  int    `json:"videoPrice"`
-	FtfPrice    int    `json:"ftfPrice"`
-	CityID      int    `json:"cityId"`
-	CityName    string `json:"cityName"`
+	UID         int             `json:"uid"`
+	Name        int             `json:"name"`
+	Gender      int             `json:"gender"`
+	Description string          `json:"description"`
+	WorkYears   int             `json:"workYears"`
+	GoodRate    int             `json:"goodRate"`
+	Motto       string          `json:"motto"`
+	AudioPrice  int             `json:"audioPrice"`
+	VideoPrice  int             `json:"videoPrice"`
+	FtfPrice    int             `json:"ftfPrice"`
+	City        common.DictInfo `json:"city"`
+	Topic       common.DictInfo `json:"topic"`
+	TopicOther  string          `json:"topicOther"`
 }
