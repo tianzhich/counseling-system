@@ -33,7 +33,7 @@ func GetAllDictInfoByTypeCode(dictType int) []DictInfo {
 }
 
 // GetDictInfoByID return the dictInfo by id
-func GetDictInfoByID(id int) DictInfo {
+func GetDictInfoByID(id int) *DictInfo {
 	var info DictInfo
 	var queryStr = fmt.Sprintf("select info_code, info_name from dict_info where id='%v'", id)
 
@@ -42,7 +42,7 @@ func GetDictInfoByID(id int) DictInfo {
 		infoRow.Scan(&info.ID, &info.Name)
 	}
 
-	return info
+	return &info
 }
 
 // IsUserLogin to check the user auth and return the user type if user logged in
