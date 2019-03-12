@@ -28,7 +28,7 @@ func GetAllDictInfoByTypeCode(dictType int) []DictInfo {
 		infoRows.Scan(&info.ID, &info.Name)
 		infos = append(infos, info)
 	}
-
+	infoRows.Close()
 	return infos
 }
 
@@ -41,7 +41,7 @@ func GetDictInfoByID(id int) *DictInfo {
 	if infoRow.Next() {
 		infoRow.Scan(&info.ID, &info.Name)
 	}
-
+	infoRow.Close()
 	return &info
 }
 
@@ -59,5 +59,6 @@ func IsUserLogin(r *http.Request) (bool, int) {
 	if rows.Next() {
 		rows.Scan(&userType)
 	}
+	rows.Close()
 	return true, userType
 }

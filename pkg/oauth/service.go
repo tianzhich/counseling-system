@@ -44,7 +44,8 @@ func signup(form SignupForm) (common.Response, int) {
 			uid = -1
 		}
 	}
-
+	repeatRows.Close()
+	existRows.Close()
 	return r, int(uid)
 }
 
@@ -75,6 +76,7 @@ func signin(form SigninForm) (common.Response, int) {
 			r.Message = "login success!"
 		}
 	}
+	rows.Close()
 	return r, uid
 }
 
@@ -99,6 +101,7 @@ func applyCounselor(form ApplyForm, uid int) (string, bool) {
 			return "", false
 		}
 	}
+	existRows.Close()
 
 	resJSON, _ := json.Marshal(applyRes)
 	return string(resJSON), true
@@ -116,6 +119,7 @@ func handleApplyCity(city string, uid int) {
 	if existRows.Next() {
 		return
 	}
+	existRows.Close()
 
 	cid := utils.QueryDBRow("select count(*) from dict_info where `type_code`=8") + 1
 	if rowID, status := utils.InsertDB("insert dict_info set type_code=?, info_code=?, info_name=?", 8, cid, city); status {
@@ -150,4 +154,5 @@ func handleApplyTopic(topic string, otherTopic string, uid int) {
 		}
 		fmt.Println("新增咨询师，修改咨询主题出错！")
 	}
+	rows.Close()
 }
