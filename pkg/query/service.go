@@ -11,7 +11,7 @@ func queryCounselor(p pagination, option *filterOption, orderBy string) (paginat
 	var queryCountStr = "select count(*) from counselor"
 	var queryStr = "select u_id, name, gender, description, work_years, good_rate, motto, audio_price, video_price, ftf_price, city, topic, topic_other, create_time from counselor"
 
-	var firstRecordIndex = p.PageNum * 10
+	var firstRecordIndex = (p.PageNum - 1) * 10
 
 	// append with query params
 	if option != nil {
