@@ -16,47 +16,55 @@ func queryCounselor(p pagination, option *filterOption, orderBy string) (paginat
 	// append with query params
 	if option != nil {
 		var base string
-		var method = *(option.Method)
-		var city = *(option.City)
-		var topic = *(option.Topic)
-
-		if method > 0 || city > 0 || topic > 0 {
-			base += " where "
-
-			if method == 1 {
+		if option.Method != nil || option.City != nil || option.Topic != nil {
+			queryCountStr += " where "
+			queryStr += " where "
+		}
+		// method
+		if option.Method != nil {
+			methodID := *(option.Method)
+			methodCode := (*(common.GetDictInfoByID(methodID))).ID
+			if methodCode == 1 {
 				base = "ftf_price>0 and "
-			} else if method == 2 {
+			} else if methodCode == 2 {
 				base = "video_price>0 and "
-			} else if method == 3 {
+			} else if methodCode == 3 {
 				base = "audio_price>0 and "
 			} else {
 				base = ""
 			}
 			queryCountStr += base
 			queryStr += base
-			if city > 0 {
-				base = fmt.Sprintf("city='%v' and ", option.City)
-			} else {
-				base = ""
-			}
-			queryCountStr += base
-			queryStr += base
-			if topic > 0 {
-				base = fmt.Sprintf("topic='%v'", option.Topic)
-			} else {
-				base = ""
-			}
-			queryCountStr += base
-			queryStr += base
-			queryCountStr = strings.TrimSuffix(queryCountStr, " and ")
-			queryStr = strings.TrimSuffix(queryStr, " and ")
 		}
+		// city
+		if option.City != nil {
+			city := *(option.City)
+			if city > 0 {
+				base = fmt.Sprintf("city='%v' and ", city)
+			} else {
+				base = ""
+			}
+			queryCountStr += base
+			queryStr += base
+		}
+		// topic
+		if option.Topic != nil {
+			topic := *(option.Topic)
+			if topic > 0 {
+				base = fmt.Sprintf("topic='%v'", topic)
+			} else {
+				base = ""
+			}
+			queryCountStr += base
+			queryStr += base
+		}
+		queryCountStr = strings.TrimSuffix(queryCountStr, " and ")
+		queryStr = strings.TrimSuffix(queryStr, " and ")
 	}
 
 	// append using pagination and order
 	queryStr += fmt.Sprintf(" %v LIMIT %v,%v", orderBy, firstRecordIndex, p.PageSize)
 
-	fmt.Println(queryStr)
 	// db op
 	count := utils.QueryDBRow(queryCountStr)
 	var pp = pagination{PageNum: p.PageNum, PageSize: p.PageSize, Total: count}

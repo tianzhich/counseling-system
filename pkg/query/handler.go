@@ -31,8 +31,6 @@ func CounselorListHandler(w http.ResponseWriter, r *http.Request) {
 			pp, counselors = queryCounselor(p, nil, "ORDER BY create_time")
 		} else {
 			var option *filterOption
-			var str = string(res)
-			fmt.Println(str)
 			err = json.Unmarshal(res, &option)
 			utils.CheckErr(err)
 			pp, counselors = queryCounselor(p, option, "ORDER BY create_time")
