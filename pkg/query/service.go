@@ -54,8 +54,9 @@ func queryCounselor(p pagination, option *filterOption, orderBy string) (paginat
 	}
 
 	// append using pagination and order
-	queryStr += fmt.Sprintf(" ORDER BY %v LIMIT %v,%v", orderBy, firstRecordIndex, p.PageSize)
+	queryStr += fmt.Sprintf(" %v LIMIT %v,%v", orderBy, firstRecordIndex, p.PageSize)
 
+	fmt.Println(queryStr)
 	// db op
 	count := utils.QueryDBRow(queryCountStr)
 	var pp = pagination{PageNum: p.PageNum, PageSize: p.PageSize, Total: count}
