@@ -29,12 +29,12 @@ func CounselorListHandler(w http.ResponseWriter, r *http.Request) {
 		// filters data body
 		res, _ := ioutil.ReadAll(r.Body)
 		if string(res) == "" {
-			pp, counselors = queryCounselor(p, nil, "ORDER BY create_time", like)
+			pp, counselors = queryCounselors(p, nil, "ORDER BY create_time", like)
 		} else {
 			var option *filterOption
 			err = json.Unmarshal(res, &option)
 			utils.CheckErr(err)
-			pp, counselors = queryCounselor(p, option, "ORDER BY create_time", like)
+			pp, counselors = queryCounselors(p, option, "ORDER BY create_time", like)
 		}
 
 		var resp common.Response
@@ -65,7 +65,7 @@ func NewlyCounselorsHandler(w http.ResponseWriter, r *http.Request) {
 	var pp pagination
 	var counselors []counselor
 
-	pp, counselors = queryCounselor(p, nil, "ORDER BY create_time DESC", "")
+	pp, counselors = queryCounselors(p, nil, "ORDER BY create_time DESC", "")
 
 	var resp common.Response
 	resp.Code = 1
@@ -73,6 +73,30 @@ func NewlyCounselorsHandler(w http.ResponseWriter, r *http.Request) {
 	resp.Data = counselorRespData{
 		pagination: pp,
 		List:       counselors,
+	}
+
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintf(w, string(resJSON))
+}
+
+// CounselorInfoHandler return the info about a single Counselor
+func CounselorInfoHandler(w http.ResponseWriter, r *http.Request) {
+	var idStr = r.URL.Query().Get("id")
+	var resp common.Response
+	if idStr == "" {
+		resp.Code = 0
+		resp.Message = "咨询师不存在"
+	} else {
+		id, _ := strconv.Atoi(idStr)
+		csl := queryCounselor(id)
+		if csl == nil {
+			resp.Code = 0
+			resp.Message = "咨询师不存在"
+		} else {
+			resp.Code = 1
+			resp.Message = "ok"
+			resp.Data = *csl
+		}
 	}
 
 	resJSON, _ := json.Marshal(resp)

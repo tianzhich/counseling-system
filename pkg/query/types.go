@@ -20,6 +20,7 @@ type filterOption struct {
 
 // counselor list
 type counselor struct {
+	ID          int              `json:"id"`
 	UID         int              `json:"uid"`
 	Name        string           `json:"name"`
 	Gender      int              `json:"gender"`

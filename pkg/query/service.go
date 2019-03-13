@@ -7,9 +7,9 @@ import (
 	"strings"
 )
 
-func queryCounselor(p pagination, option *filterOption, orderBy string, like string) (pagination, []counselor) {
+func queryCounselors(p pagination, option *filterOption, orderBy string, like string) (pagination, []counselor) {
 	var queryCountStr = "select count(*) from counselor"
-	var queryStr = "select u_id, name, gender, description, work_years, good_rate, motto, audio_price, video_price, ftf_price, city, topic, topic_other, create_time from counselor"
+	var queryStr = "select id, u_id, name, gender, description, work_years, good_rate, motto, audio_price, video_price, ftf_price, city, topic, topic_other, create_time from counselor"
 
 	var firstRecordIndex = (p.PageNum - 1) * p.PageSize
 
@@ -95,7 +95,7 @@ func queryCounselor(p pagination, option *filterOption, orderBy string, like str
 		var c counselor
 		var cityID *int
 		var topicID int
-		rows.Scan(&c.UID, &c.Name, &c.Gender, &c.Description, &c.WorkYears, &c.GoodRate, &c.Motto, &c.AudioPrice, &c.VideoPrice, &c.FtfPrice, &cityID, &topicID, &c.TopicOther, &c.ApplyTime)
+		rows.Scan(&c.ID, &c.UID, &c.Name, &c.Gender, &c.Description, &c.WorkYears, &c.GoodRate, &c.Motto, &c.AudioPrice, &c.VideoPrice, &c.FtfPrice, &cityID, &topicID, &c.TopicOther, &c.ApplyTime)
 
 		// city和topic单独处理
 		if cityID == nil {
@@ -110,4 +110,28 @@ func queryCounselor(p pagination, option *filterOption, orderBy string, like str
 	rows.Close()
 
 	return pp, counselorList
+}
+
+func queryCounselor(id int) *counselor {
+	var queryStr = fmt.Sprintf("select id, u_id, name, gender, description, work_years, good_rate, motto, audio_price, video_price, ftf_price, city, topic, topic_other, create_time from counselor where id='%v'", id)
+
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		var c counselor
+		var cityID *int
+		var topicID int
+		rows.Scan(&c.ID, &c.UID, &c.Name, &c.Gender, &c.Description, &c.WorkYears, &c.GoodRate, &c.Motto, &c.AudioPrice, &c.VideoPrice, &c.FtfPrice, &cityID, &topicID, &c.TopicOther, &c.ApplyTime)
+
+		// city和topic单独处理
+		if cityID == nil {
+			c.City = nil
+		} else {
+			c.City = common.GetDictInfoByID(*cityID)
+		}
+		c.Topic = *(common.GetDictInfoByID(topicID))
+		rows.Close()
+		return &c
+	}
+
+	return nil
 }
