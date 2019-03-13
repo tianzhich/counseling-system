@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func queryCounselor(p pagination, option *filterOption, orderBy string) (pagination, []counselor) {
+func queryCounselor(p pagination, option *filterOption, orderBy string, like string) (pagination, []counselor) {
 	var queryCountStr = "select count(*) from counselor"
 	var queryStr = "select u_id, name, gender, description, work_years, good_rate, motto, audio_price, video_price, ftf_price, city, topic, topic_other, create_time from counselor"
 
@@ -51,16 +51,30 @@ func queryCounselor(p pagination, option *filterOption, orderBy string) (paginat
 		if option.Topic != nil {
 			topic := *(option.Topic)
 			if topic > 0 {
-				base = fmt.Sprintf("topic='%v'", topic)
+				base = fmt.Sprintf("topic='%v' and ", topic)
 			} else {
 				base = ""
 			}
 			queryCountStr += base
 			queryStr += base
 		}
-		queryCountStr = strings.TrimSuffix(queryCountStr, " and ")
-		queryStr = strings.TrimSuffix(queryStr, " and ")
 	}
+
+	// fuzzy query
+	if like != "" {
+		var likeStr string
+		if strings.Contains(queryStr, "where") {
+			likeStr = "name LIKE '%" + like + "%'"
+			queryCountStr += likeStr
+			queryStr += likeStr
+		} else {
+			likeStr = " where name LIKE '%" + like + "%'"
+			queryCountStr += likeStr
+			queryStr += likeStr
+		}
+	}
+	queryCountStr = strings.TrimSuffix(queryCountStr, " and ")
+	queryStr = strings.TrimSuffix(queryStr, " and ")
 
 	// append using pagination and order
 	queryStr += fmt.Sprintf(" %v LIMIT %v,%v", orderBy, firstRecordIndex, p.PageSize)

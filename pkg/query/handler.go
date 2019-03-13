@@ -21,19 +21,20 @@ func CounselorListHandler(w http.ResponseWriter, r *http.Request) {
 			PageSize: pageSize,
 		}
 
+		like := r.URL.Query().Get("like")
+
 		var pp pagination
 		var counselors []counselor
 
 		// filters data body
 		res, _ := ioutil.ReadAll(r.Body)
-
 		if string(res) == "" {
-			pp, counselors = queryCounselor(p, nil, "ORDER BY create_time")
+			pp, counselors = queryCounselor(p, nil, "ORDER BY create_time", like)
 		} else {
 			var option *filterOption
 			err = json.Unmarshal(res, &option)
 			utils.CheckErr(err)
-			pp, counselors = queryCounselor(p, option, "ORDER BY create_time")
+			pp, counselors = queryCounselor(p, option, "ORDER BY create_time", like)
 		}
 
 		var resp common.Response
@@ -64,7 +65,7 @@ func NewlyCounselorsHandler(w http.ResponseWriter, r *http.Request) {
 	var pp pagination
 	var counselors []counselor
 
-	pp, counselors = queryCounselor(p, nil, "ORDER BY create_time DESC")
+	pp, counselors = queryCounselor(p, nil, "ORDER BY create_time DESC", "")
 
 	var resp common.Response
 	resp.Code = 1
