@@ -3,6 +3,7 @@ package main
 import (
 	"counseling-system/pkg/info"
 	"counseling-system/pkg/oauth"
+	"counseling-system/pkg/operation"
 	"counseling-system/pkg/query"
 
 	"log"
@@ -16,6 +17,7 @@ func main() {
 	oauthHandlers(mux)
 	infoHandlers(mux)
 	queryHandlers(mux)
+	operationHandlers(mux)
 
 	log.Println("Listening on port 8081 ...")
 	err := http.ListenAndServe(":8081", mux)
@@ -38,4 +40,8 @@ func queryHandlers(mux *http.ServeMux) {
 	mux.HandleFunc("/api/query/counselorList", query.CounselorListHandler)
 	mux.HandleFunc("/api/query/newlyCounselors", query.NewlyCounselorsHandler)
 	mux.HandleFunc("/api/query/counselor", query.CounselorInfoHandler)
+}
+
+func operationHandlers(mux *http.ServeMux) {
+	mux.HandleFunc("/api/operation/appoint", operation.AppointHandler)
 }
