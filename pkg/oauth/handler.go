@@ -103,9 +103,9 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		resJSON, success := applyCounselor(formData, common.GetUserID(r))
+		resString, success := applyCounselor(formData, common.GetUserID(r))
 		if success {
-			fmt.Fprintln(w, string(resJSON))
+			fmt.Fprintln(w, resString)
 		}
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
