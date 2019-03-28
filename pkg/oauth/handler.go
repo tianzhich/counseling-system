@@ -62,8 +62,8 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	var res common.Response
 
 	// Check if user is authenticated
-	isLoggedin, userType := common.IsUserLogin(r)
-	if !isLoggedin {
+	uid, userType := common.IsUserLogin(r)
+	if uid == -1 {
 		res.Code = 0
 		res.Message = "用户未登录"
 	} else {
@@ -96,14 +96,15 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 		err := json.Unmarshal(res, &formData)
 		utils.CheckErr(err)
 
-		if isLoggedin, _ := common.IsUserLogin(r); !isLoggedin {
+		var uid int
+		if uid, _ = common.IsUserLogin(r); uid == -1 {
 			var result = common.Response{Code: -1, Message: "用户未登录，无法执行操作！"}
 			resJSON, _ := json.Marshal(result)
 			fmt.Fprintf(w, string(resJSON))
 			return
 		}
 
-		resString, success := applyCounselor(formData, common.GetUserID(r))
+		resString, success := applyCounselor(formData, uid)
 		if success {
 			fmt.Fprintln(w, resString)
 		}

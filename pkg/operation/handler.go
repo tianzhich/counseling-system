@@ -13,7 +13,8 @@ import (
 func AppointHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		// 登录验证
-		if isLogin, _ := common.IsUserLogin(r); !isLogin {
+		var uid int
+		if uid, _ = common.IsUserLogin(r); uid == -1 {
 			http.Error(w, "Authentication failed", http.StatusUnauthorized)
 			return
 		}
@@ -24,7 +25,7 @@ func AppointHandler(w http.ResponseWriter, r *http.Request) {
 		err := json.Unmarshal(res, &formData)
 		utils.CheckErr(err)
 
-		resJSON, success := addCounselingRecord(formData, common.GetUserID(r))
+		resJSON, success := addCounselingRecord(formData, uid)
 		if success {
 			fmt.Fprintln(w, string(resJSON))
 		}

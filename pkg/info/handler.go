@@ -7,12 +7,19 @@ import (
 	"net/http"
 )
 
+// const
+const (
+	CITY   = 8
+	METHOD = 10
+	TOPIC  = 4
+)
+
 // CounselorFilterHandler get all filters about counselor
 func CounselorFilterHandler(w http.ResponseWriter, r *http.Request) {
 	var res common.Response
-	var cities = common.GetAllDictInfoByTypeCode(8)
-	var methods = common.GetAllDictInfoByTypeCode(10)
-	var topics = common.GetAllDictInfoByTypeCode(4)
+	var cities = common.GetAllDictInfoByTypeCode(CITY)
+	var methods = common.GetAllDictInfoByTypeCode(METHOD)
+	var topics = common.GetAllDictInfoByTypeCode(TOPIC)
 
 	res.Code = 1
 	res.Message = "ok"
