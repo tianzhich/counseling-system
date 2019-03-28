@@ -102,3 +102,26 @@ func CounselorInfoHandler(w http.ResponseWriter, r *http.Request) {
 	resJSON, _ := json.Marshal(resp)
 	fmt.Fprintf(w, string(resJSON))
 }
+
+// NotificationHandler return the messages and notifications of user
+func NotificationHandler(w http.ResponseWriter, r *http.Request) {
+	var uid int
+	if uid, _ = common.IsUserLogin(r); uid == -1 {
+		http.Error(w, "Not Loggin", http.StatusUnauthorized)
+		return
+	}
+
+	var preview bool
+	if r.URL.Query().Get("preview") == "1" {
+		preview = true
+	} else {
+		preview = false
+	}
+	var resp common.Response
+	resp.Code = 1
+	resp.Message = "ok"
+	resp.Data = queryNotifications(uid, preview)
+
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintf(w, string(resJSON))
+}

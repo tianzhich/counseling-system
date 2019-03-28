@@ -12,3 +12,14 @@ type DictInfo struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
+
+// Notification (notification table)
+type Notification struct {
+	ID     int    `json:"id"`
+	UID    int    `json:"uID"`
+	Type   string `json:"type"`
+	IsRead int    `json:"isRead"`
+	Title  string `json:"title"`
+	Desc   string `json:"desc"`
+	Time   string `json:"time"`
+}

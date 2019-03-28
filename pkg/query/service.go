@@ -135,3 +135,20 @@ func queryCounselor(id int) *counselor {
 
 	return nil
 }
+
+// 查询通知消息和留言消息, preview只查看前5条数据
+func queryNotifications(uID int, preview bool) []common.Notification {
+	var notis []common.Notification
+	var queryStr = fmt.Sprintf("select id, type, title, `desc`, create_time from notification where u_id=%v and is_read=0 ORDER BY create_time ", uID)
+	if preview {
+		queryStr += "LIMIT 5"
+	}
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var noti common.Notification
+		rows.Scan(&noti.ID, &noti.Type, &noti.Title, &noti.Desc, &noti.Time)
+		notis = append(notis, noti)
+	}
+	rows.Close()
+	return notis
+}

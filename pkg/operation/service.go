@@ -16,6 +16,11 @@ func addCounselingRecord(formData RecordForm, uid int) (string, bool) {
 	methodStr := strings.Replace(formData.Method, "\"", "\\\"", -1)
 
 	if _, success := utils.InsertDB(insertStr, formData.CID, uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, formData.Status); success {
+		// 增加通知
+		var title = formData.Name + "向您发起了咨询预约，请及时确认"
+		var no = common.Notification{UID: common.GetUserIDByCID(formData.CID), Type: "counseling", Title: title, Desc: ""}
+		common.AddNotification(no)
+
 		resp.Code = 1
 		resp.Message = "ok"
 		resJSON, _ := json.Marshal(resp)
