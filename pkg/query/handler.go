@@ -125,3 +125,25 @@ func NotificationHandler(w http.ResponseWriter, r *http.Request) {
 	resJSON, _ := json.Marshal(resp)
 	fmt.Fprintf(w, string(resJSON))
 }
+
+// ProfileAllInfoHandler return all infos in Profile page
+func ProfileAllInfoHandler(w http.ResponseWriter, r *http.Request) {
+	var uid int
+	if uid, _ = common.IsUserLogin(r); uid == -1 {
+		http.Error(w, "Not Loggin", http.StatusUnauthorized)
+		return
+	}
+
+	var resp common.Response
+
+	// query notifications
+	var notifs = queryNotifications(uid, false)
+
+	// other xxx
+
+	resp.Code = 1
+	resp.Message = "ok"
+	resp.Data = profileAll{Notification: notifs}
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintf(w, string(resJSON))
+}
