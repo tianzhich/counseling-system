@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -33,4 +34,21 @@ func addCounselingRecord(formData common.RecordForm, uid int) (string, bool) {
 	}
 	fmt.Println("新增咨询记录失败，数据库插入错误")
 	return "", false
+}
+
+// 将通知标记为已读
+func markReadNotification(ids []string) bool {
+	var updateStr = "update notification set is_read=1 where "
+
+	for _, id := range ids {
+		iid, _ := strconv.Atoi(id)
+		updateStr += fmt.Sprintf("id=%v || ", iid)
+	}
+
+	updateStr = strings.TrimSuffix(updateStr, " || ")
+	if ok := utils.UpdateDB(updateStr); !ok {
+		fmt.Println("标注通知已读，数据库更新失败")
+		return false
+	}
+	return true
 }
