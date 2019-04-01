@@ -163,6 +163,8 @@ func queryCounselingRecords(userType int, id int) []common.RecordForm {
 		queryStr = fmt.Sprintf("%v u_id=%v", queryStr, id)
 	}
 
+	queryStr += " ORDER BY create_time DESC"
+
 	rows := utils.QueryDB(queryStr)
 	for rows.Next() {
 		var record common.RecordForm
