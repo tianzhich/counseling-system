@@ -21,7 +21,7 @@ func AppointHandler(w http.ResponseWriter, r *http.Request) {
 
 		res, _ := ioutil.ReadAll(r.Body)
 
-		var formData RecordForm
+		var formData common.RecordForm
 		err := json.Unmarshal(res, &formData)
 		utils.CheckErr(err)
 

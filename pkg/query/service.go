@@ -139,7 +139,7 @@ func queryCounselor(id int) *counselor {
 // 查询通知消息和留言消息, preview只查看前5条数据
 func queryNotifications(uID int, preview bool) []common.Notification {
 	var notis []common.Notification
-	var queryStr = fmt.Sprintf("select id, type, title, `desc`, create_time from notification where u_id=%v and is_read=0 ORDER BY create_time ", uID)
+	var queryStr = fmt.Sprintf("select id, type, title, `desc`, create_time from notification where u_id=%v and is_read=0 ORDER BY create_time DESC ", uID)
 	if preview {
 		queryStr += "LIMIT 5"
 	}
@@ -151,4 +151,25 @@ func queryNotifications(uID int, preview bool) []common.Notification {
 	}
 	rows.Close()
 	return notis
+}
+
+// 查询咨询记录
+func queryCounselingRecords(userType int, id int) []common.RecordForm {
+	var records []common.RecordForm
+	var queryStr = "select id, method, times, name, age, gender, phone, contact_phone, contact_name, contact_rel, `desc`, status, create_time from counseling_record where"
+	if userType == 1 {
+		queryStr = fmt.Sprintf("%v c_id=%v", queryStr, id)
+	} else {
+		queryStr = fmt.Sprintf("%v u_id=%v", queryStr, id)
+	}
+
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var record common.RecordForm
+		rows.Scan(&record.ID, &record.Method, &record.Times, &record.Name, &record.Age, &record.Gender, &record.Phone, &record.ContactPhone, &record.ContactName, &record.ContactRel, &record.Desc, &record.Status, &record.CreateTime)
+		record.Method = strings.Replace(record.Method, "\\", "", -1)
+		records = append(records, record)
+	}
+	rows.Close()
+	return records
 }

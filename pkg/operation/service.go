@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func addCounselingRecord(formData RecordForm, uid int) (string, bool) {
+func addCounselingRecord(formData common.RecordForm, uid int) (string, bool) {
 	var insertStr = "insert counseling_record set c_id=?, u_id=?, method=?, times=?, name=?, age=?, gender=?, phone=?, contact_phone=?, contact_name=?, contact_rel=?, `desc`=?, status=?"
 	var resp common.Response
 
@@ -23,8 +23,8 @@ func addCounselingRecord(formData RecordForm, uid int) (string, bool) {
 	if _, success := utils.InsertDB(insertStr, formData.CID, uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, "wait_contact"); success {
 		// 增加通知
 		var title = fmt.Sprintf("%v向您发起了咨询预约(%v)，请及时确认", formData.Name, methodName)
-		var no = common.Notification{UID: common.GetUserIDByCID(formData.CID), Type: "counseling", Title: title, Desc: ""}
-		common.AddNotification(no)
+		var no = common.Notification{Title: title, Desc: ""}
+		common.AddNotification(common.GetUserIDByCID(*(formData.CID)), no)
 
 		resp.Code = 1
 		resp.Message = "ok"

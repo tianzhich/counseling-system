@@ -42,7 +42,3 @@ type counselorRespData struct {
 	pagination
 	List []counselor `json:"list"`
 }
-
-type profileAll struct {
-	Notification []common.Notification `json:"notification"`
-}

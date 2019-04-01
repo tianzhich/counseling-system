@@ -41,7 +41,7 @@ func queryHandlers(mux *http.ServeMux) {
 	mux.HandleFunc("/api/query/newlyCounselors", query.NewlyCounselorsHandler)
 	mux.HandleFunc("/api/query/counselor", query.CounselorInfoHandler)
 	mux.HandleFunc("/api/query/notifications", query.NotificationHandler)
-	mux.HandleFunc("/api/query/profileAll", query.ProfileAllInfoHandler)
+	mux.HandleFunc("/api/query/counselingRecords", query.CounselingRecordHandler)
 }
 
 func operationHandlers(mux *http.ServeMux) {

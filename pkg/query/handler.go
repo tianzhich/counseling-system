@@ -126,24 +126,29 @@ func NotificationHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(resJSON))
 }
 
-// ProfileAllInfoHandler return all infos in Profile page
-func ProfileAllInfoHandler(w http.ResponseWriter, r *http.Request) {
+// CounselingRecordHandler return all the counseling record
+func CounselingRecordHandler(w http.ResponseWriter, r *http.Request) {
 	var uid int
-	if uid, _ = common.IsUserLogin(r); uid == -1 {
+	var cid int
+	var userType int
+	var records []common.RecordForm
+
+	if uid, userType = common.IsUserLogin(r); uid == -1 {
 		http.Error(w, "Not Loggin", http.StatusUnauthorized)
 		return
 	}
+	if userType == 1 {
+		cid = common.GetCounselorIDByUID(uid)
+		records = queryCounselingRecords(userType, cid)
+	} else {
+		records = queryCounselingRecords(userType, uid)
+	}
 
 	var resp common.Response
-
-	// query notifications
-	var notifs = queryNotifications(uid, false)
-
-	// other xxx
-
 	resp.Code = 1
 	resp.Message = "ok"
-	resp.Data = profileAll{Notification: notifs}
+	resp.Data = records
 	resJSON, _ := json.Marshal(resp)
+
 	fmt.Fprintf(w, string(resJSON))
 }

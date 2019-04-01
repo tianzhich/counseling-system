@@ -53,8 +53,8 @@ func IsUserLogin(r *http.Request) (int, int) {
 }
 
 // AddNotification to notification table
-func AddNotification(no Notification) {
-	var insertStr = "insert notification set u_id=?, type=?, title=?, `desc`=?"
+func AddNotification(uid int, no Notification) {
+	var insertStr = fmt.Sprintf("insert notification set u_id=%v, type=?, title=?, `desc`=?", uid)
 
 	if _, success := utils.InsertDB(insertStr, no.UID, no.Type, no.Title, no.Desc); !success {
 		fmt.Println("新增通知失败！")
@@ -72,7 +72,7 @@ func ReadNotification(id int) {
 
 // GetUserIDByCID return the user ID for counselor
 func GetUserIDByCID(cID int) int {
-	var queryStr = fmt.Sprintf("select u_id from counselor where id='%v'", cID)
+	var queryStr = fmt.Sprintf("select u_id from counselor where id=%v", cID)
 	var uID int
 
 	rows := utils.QueryDB(queryStr)
@@ -83,4 +83,19 @@ func GetUserIDByCID(cID int) int {
 	}
 	rows.Close()
 	return uID
+}
+
+// GetCounselorIDByUID return the c_id for counselor
+func GetCounselorIDByUID(id int) int {
+	var queryStr = fmt.Sprintf("select id from counselor where u_id=%v", id)
+	var cID int
+
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Scan(&cID)
+	} else {
+		fmt.Println("查找咨询师c_id失败！")
+	}
+	rows.Close()
+	return cID
 }
