@@ -5,6 +5,7 @@ import (
 	"counseling-system/pkg/utils"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -14,10 +15,14 @@ func addCounselingRecord(formData RecordForm, uid int) (string, bool) {
 
 	// method含双引号，插入数据库前进行转义处理
 	methodStr := strings.Replace(formData.Method, "\"", "\\\"", -1)
+	// method name处理
+	methodReg := regexp.MustCompile(`name":"(.*?)"`)
+	params := methodReg.FindStringSubmatch(formData.Method)
+	var methodName = params[1]
 
-	if _, success := utils.InsertDB(insertStr, formData.CID, uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, formData.Status); success {
+	if _, success := utils.InsertDB(insertStr, formData.CID, uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, "wait_contact"); success {
 		// 增加通知
-		var title = formData.Name + "向您发起了咨询预约，请及时确认"
+		var title = fmt.Sprintf("%v向您发起了咨询预约(%v)，请及时确认", formData.Name, methodName)
 		var no = common.Notification{UID: common.GetUserIDByCID(formData.CID), Type: "counseling", Title: title, Desc: ""}
 		common.AddNotification(no)
 
