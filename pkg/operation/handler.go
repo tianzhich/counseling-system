@@ -35,8 +35,8 @@ func AppointHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// MarkReadNotification mark the notification to isRead status
-func MarkReadNotification(w http.ResponseWriter, r *http.Request) {
+// MarkReadHandler mark the notification or message to isRead status
+func MarkReadHandler(w http.ResponseWriter, r *http.Request) {
 	var uid int
 	if uid, _ = common.IsUserLogin(r); uid == -1 {
 		http.Error(w, "Authentication failed", http.StatusUnauthorized)
@@ -46,7 +46,8 @@ func MarkReadNotification(w http.ResponseWriter, r *http.Request) {
 	var resp common.Response
 
 	ids := strings.Split(r.URL.Query().Get("ids"), ",")
-	if ok := markReadNotification(ids); !ok {
+	t := r.URL.Query().Get("type")
+	if ok := markRead(ids, t); !ok {
 		resp.Code = 0
 		resp.Message = "数据库操作失败"
 	} else {
@@ -56,4 +57,38 @@ func MarkReadNotification(w http.ResponseWriter, r *http.Request) {
 
 	resJSON, _ := json.Marshal(resp)
 	fmt.Fprintln(w, string(resJSON))
+}
+
+// AddMessageHandler add message
+func AddMessageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		var uid int
+		if uid, _ = common.IsUserLogin(r); uid == -1 {
+			http.Error(w, "Authentication failed", http.StatusUnauthorized)
+			return
+		}
+
+		var resp common.Response
+		var m common.Message
+		res, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(res, &m)
+		utils.CheckErr(err)
+
+		if m.Receiver == uid {
+			resp.Code = -1
+			resp.Message = "无法向自己私信！"
+		} else {
+			if ok := addMessage(uid, m); ok {
+				resp.Code = 1
+				resp.Message = "ok"
+			} else {
+				resp.Code = 0
+				resp.Message = common.ServerErrorMessage
+			}
+		}
+		resJSON, _ := json.Marshal(resp)
+		fmt.Fprintln(w, string(resJSON))
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
 }

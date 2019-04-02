@@ -61,15 +61,6 @@ func AddNotification(uid int, no Notification) {
 	}
 }
 
-// ReadNotification set notification isRead=true
-func ReadNotification(id int) {
-	var updateStr = fmt.Sprintf("update notification set is_read=? where id='%v'", id)
-
-	if success := utils.UpdateDB(updateStr, 1); !success {
-		fmt.Println("更新通知（已阅读）失败！")
-	}
-}
-
 // GetUserIDByCID return the user ID for counselor
 func GetUserIDByCID(cID int) int {
 	var queryStr = fmt.Sprintf("select u_id from counselor where id=%v", cID)
@@ -98,4 +89,31 @@ func GetCounselorIDByUID(id int) int {
 	}
 	rows.Close()
 	return cID
+}
+
+// GetNameByUID return the username or counselor name according to userID
+func GetNameByUID(uid int) string {
+	var name string
+	var queryStr = fmt.Sprintf("select username, type from user where id=%v", uid)
+
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		var userType int
+		rows.Scan(&name, &userType)
+		rows.Close()
+
+		if userType == 1 {
+			queryStr = fmt.Sprintf("select name from counselor where u_id=%v", uid)
+			crows := utils.QueryDB(queryStr)
+			if crows.Next() {
+				crows.Scan(&name)
+				crows.Close()
+			} else {
+				fmt.Println("根据UID查找咨询师姓名失败！")
+			}
+		}
+	} else {
+		fmt.Println("根据UID查找用户名失败！")
+	}
+	return name
 }

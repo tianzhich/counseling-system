@@ -37,8 +37,13 @@ func addCounselingRecord(formData common.RecordForm, uid int) (string, bool) {
 }
 
 // 将通知标记为已读
-func markReadNotification(ids []string) bool {
-	var updateStr = "update notification set is_read=1 where "
+func markRead(ids []string, t string) bool {
+	var updateStr string
+	if t == "notification" {
+		updateStr = "update notification set is_read=1 where "
+	} else {
+		updateStr = "update message set is_read=1 where "
+	}
 
 	for _, id := range ids {
 		iid, _ := strconv.Atoi(id)
@@ -47,7 +52,16 @@ func markReadNotification(ids []string) bool {
 
 	updateStr = strings.TrimSuffix(updateStr, " || ")
 	if ok := utils.UpdateDB(updateStr); !ok {
-		fmt.Println("标注通知已读，数据库更新失败")
+		fmt.Println("标注通知或留言已读，数据库更新失败")
+		return false
+	}
+	return true
+}
+
+func addMessage(uid int, m common.Message) bool {
+	var insertStr = "insert into message set sender=?, receiver=?, detail=?"
+	if _, ok := utils.InsertDB(insertStr, uid, m.Receiver, m.Detail); !ok {
+		fmt.Println("添加私信，插入数据库错误！")
 		return false
 	}
 	return true

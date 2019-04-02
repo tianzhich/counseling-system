@@ -1,5 +1,10 @@
 package common
 
+var (
+	// ServerErrorMessage xxx
+	ServerErrorMessage = "内部服务器错误，请稍后重试！"
+)
+
 // Response declare the struct of API response
 type Response struct {
 	Code    int         `json:"code"`
@@ -40,4 +45,15 @@ type RecordForm struct {
 	Desc         string `json:"desc"`
 	Status       string `json:"status"`
 	CreateTime   string `json:"createTime"`
+}
+
+// Message xxx(留言)
+type Message struct {
+	ID           int    `json:"id"`
+	Sender       int    `json:"sender"`
+	SenderName   string `json:"senderName"`
+	Receiver     int    `json:"receiver"`
+	ReceiverName string `json:"receiverName"`
+	Detail       string `json:"detail"`
+	Time         string `json:"time"`
 }

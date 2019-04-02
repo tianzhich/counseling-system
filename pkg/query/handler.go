@@ -152,3 +152,20 @@ func CounselingRecordHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, string(resJSON))
 }
+
+// MessageHandler return all the message
+func MessageHandler(w http.ResponseWriter, r *http.Request) {
+	var uid int
+	if uid, _ = common.IsUserLogin(r); uid == -1 {
+		http.Error(w, "Not Loggin", http.StatusUnauthorized)
+		return
+	}
+
+	var resp common.Response
+	resp.Code = 1
+	resp.Message = "ok"
+	resp.Data = queryMessage(uid)
+	resJSON, _ := json.Marshal(resp)
+
+	fmt.Fprintf(w, string(resJSON))
+}

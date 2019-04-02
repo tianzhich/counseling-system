@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// 咨询师列表
 func queryCounselors(p pagination, option *filterOption, orderBy string, like string) (pagination, []counselor) {
 	var queryCountStr = "select count(*) from counselor"
 	var queryStr = "select id, u_id, name, gender, description, work_years, good_rate, motto, audio_price, video_price, ftf_price, city, topic, topic_other, create_time from counselor"
@@ -174,4 +175,22 @@ func queryCounselingRecords(userType int, id int) []common.RecordForm {
 	}
 	rows.Close()
 	return records
+}
+
+// 查询留言记录, 只查看前5条未读数据
+func queryMessage(uid int) []common.Message {
+	var messages []common.Message
+	var queryStr = fmt.Sprintf("select id, sender, detail, create_time from message where receiver=%v and is_read=0 LIMIT 5 ORDER BY create_time DESC", uid)
+
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var m common.Message
+		var senderID int
+		rows.Scan(&m.ID, senderID, &m.Detail, &m.Time)
+		m.SenderName = common.GetNameByUID(senderID)
+		messages = append(messages, m)
+	}
+	rows.Close()
+
+	return messages
 }
