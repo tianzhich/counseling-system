@@ -6,12 +6,14 @@ import (
 	"counseling-system/pkg/operation"
 	"counseling-system/pkg/query"
 
+	"github.com/gorilla/mux"
+
 	"log"
 	"net/http"
 )
 
 func main() {
-	mux := http.NewServeMux()
+	mux := mux.NewRouter()
 
 	// API handler
 	oauthHandlers(mux)
@@ -24,7 +26,7 @@ func main() {
 	log.Fatal(err)
 }
 
-func oauthHandlers(mux *http.ServeMux) {
+func oauthHandlers(mux *(mux.Router)) {
 	mux.HandleFunc("/api/oauth/signup", oauth.SignupHandler)
 	mux.HandleFunc("/api/oauth/signin", oauth.SigninHandler)
 	mux.HandleFunc("/api/oauth/auth", oauth.AuthHandler)
@@ -32,11 +34,11 @@ func oauthHandlers(mux *http.ServeMux) {
 	mux.HandleFunc("/api/oauth/apply", oauth.ApplyHandler)
 }
 
-func infoHandlers(mux *http.ServeMux) {
+func infoHandlers(mux *(mux.Router)) {
 	mux.HandleFunc("/api/info/counselingFilters", info.CounselorFilterHandler)
 }
 
-func queryHandlers(mux *http.ServeMux) {
+func queryHandlers(mux *(mux.Router)) {
 	mux.HandleFunc("/api/query/counselorList", query.CounselorListHandler)
 	mux.HandleFunc("/api/query/newlyCounselors", query.NewlyCounselorsHandler)
 	mux.HandleFunc("/api/query/counselor", query.CounselorInfoHandler)
@@ -45,8 +47,9 @@ func queryHandlers(mux *http.ServeMux) {
 	mux.HandleFunc("/api/query/counselingRecords", query.CounselingRecordHandler)
 }
 
-func operationHandlers(mux *http.ServeMux) {
+func operationHandlers(mux *(mux.Router)) {
 	mux.HandleFunc("/api/operation/appoint", operation.AppointHandler)
 	mux.HandleFunc("/api/operation/markRead", operation.MarkReadHandler)
 	mux.HandleFunc("/api/operation/addMessage", operation.AddMessageHandler)
+	mux.HandleFunc("/api/operation/appointProcess/{recordID}/{type}", operation.AppointProcessHandler)
 }
