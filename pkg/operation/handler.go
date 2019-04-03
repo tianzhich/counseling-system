@@ -92,3 +92,28 @@ func AddMessageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 }
+
+// AppointProcessHandler 处理咨询流程进度，0表示拒绝当前流程，1表示同意
+func AppointProcessHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		var uid int
+		var userType int
+		if uid, userType = common.IsUserLogin(r); uid == -1 {
+			http.Error(w, "Authentication failed", http.StatusUnauthorized)
+			return
+		}
+
+		var pathArr = strings.Split(r.URL.Path, "/")
+		if len(pathArr) != 6 {
+			http.Error(w, "Invalid request", http.StatusForbidden)
+			return
+		}
+		var recordID = pathArr[4]
+		var operation = pathArr[5]
+
+		//
+
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+}
