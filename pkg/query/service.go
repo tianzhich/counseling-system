@@ -180,12 +180,12 @@ func queryMessage(uid int) []common.Message {
 	var queryStr = fmt.Sprintf("select id, sender, detail, create_time from message where receiver=%v and is_read=0 ORDER BY create_time DESC", uid)
 
 	rows := utils.QueryDB(queryStr)
-	fmt.Println(queryStr)
 	for rows.Next() {
 		var m common.Message
 		var senderID int
 		rows.Scan(&m.ID, &senderID, &m.Detail, &m.Time)
 		m.SenderName = common.GetNameByUID(senderID)
+		m.SenderID = senderID
 		messages = append(messages, m)
 	}
 	rows.Close()

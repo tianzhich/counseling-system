@@ -50,7 +50,7 @@ type RecordForm struct {
 // Message xxx(留言)
 type Message struct {
 	ID           int    `json:"id"`
-	Sender       int    `json:"sender"`
+	SenderID     int    `json:"senderId"`
 	SenderName   string `json:"senderName"`
 	Receiver     int    `json:"receiver"`
 	ReceiverName string `json:"receiverName"`
