@@ -36,13 +36,16 @@ func addCounselingRecord(formData common.RecordForm, uid int) (string, bool) {
 	return "", false
 }
 
-// 将通知标记为已读
+// 将通知或私信标记为已读
 func markRead(ids []string, t string) bool {
 	var updateStr string
 	if t == "notification" {
 		updateStr = "update notification set is_read=1 where "
-	} else {
+	} else if t == "message" {
 		updateStr = "update message set is_read=1 where "
+	} else {
+		fmt.Println("标注通知已读，非法类型")
+		return false
 	}
 
 	for _, id := range ids {
@@ -52,7 +55,7 @@ func markRead(ids []string, t string) bool {
 
 	updateStr = strings.TrimSuffix(updateStr, " || ")
 	if ok := utils.UpdateDB(updateStr); !ok {
-		fmt.Println("标注通知或留言已读，数据库更新失败")
+		fmt.Println("标注通知或私信已读，数据库更新失败")
 		return false
 	}
 	return true
