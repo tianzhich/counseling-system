@@ -137,13 +137,10 @@ func queryCounselor(id int) *counselor {
 	return nil
 }
 
-// 查询通知消息和留言消息, preview只查看前5条数据
-func queryNotifications(uID int, preview bool) []common.Notification {
+// 查看未读通知消息
+func queryNotifications(uID int) []common.Notification {
 	var notis []common.Notification
-	var queryStr = fmt.Sprintf("select id, type, title, `desc`, create_time from notification where u_id=%v and is_read=0 ORDER BY create_time DESC ", uID)
-	if preview {
-		queryStr += "LIMIT 5"
-	}
+	var queryStr = fmt.Sprintf("select id, type, title, `desc`, create_time from notification where u_id=%v and is_read=0 ORDER BY create_time DESC", uID)
 	rows := utils.QueryDB(queryStr)
 	for rows.Next() {
 		var noti common.Notification
@@ -177,16 +174,17 @@ func queryCounselingRecords(userType int, id int) []common.RecordForm {
 	return records
 }
 
-// 查询留言记录, 只查看前5条未读数据
+// 查询未读留言记录
 func queryMessage(uid int) []common.Message {
 	var messages []common.Message
-	var queryStr = fmt.Sprintf("select id, sender, detail, create_time from message where receiver=%v and is_read=0 LIMIT 5 ORDER BY create_time DESC", uid)
+	var queryStr = fmt.Sprintf("select id, sender, detail, create_time from message where receiver=%v and is_read=0 ORDER BY create_time DESC", uid)
 
 	rows := utils.QueryDB(queryStr)
+	fmt.Println(queryStr)
 	for rows.Next() {
 		var m common.Message
 		var senderID int
-		rows.Scan(&m.ID, senderID, &m.Detail, &m.Time)
+		rows.Scan(&m.ID, &senderID, &m.Detail, &m.Time)
 		m.SenderName = common.GetNameByUID(senderID)
 		messages = append(messages, m)
 	}

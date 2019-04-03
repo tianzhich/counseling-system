@@ -111,16 +111,10 @@ func NotificationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var preview bool
-	if r.URL.Query().Get("preview") == "1" {
-		preview = true
-	} else {
-		preview = false
-	}
 	var resp common.Response
 	resp.Code = 1
 	resp.Message = "ok"
-	resp.Data = queryNotifications(uid, preview)
+	resp.Data = queryNotifications(uid)
 
 	resJSON, _ := json.Marshal(resp)
 	fmt.Fprintf(w, string(resJSON))
