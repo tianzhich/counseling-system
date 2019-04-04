@@ -21,10 +21,10 @@ func addCounselingRecord(formData common.RecordForm, uid int) (string, bool) {
 	params := methodReg.FindStringSubmatch(formData.Method)
 	var methodName = params[1]
 
-	if _, success := utils.InsertDB(insertStr, formData.CID, uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, "wait_contact"); success {
+	if _, success := utils.InsertDB(insertStr, *(formData.CID), uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, "wait_contact"); success {
 		// 增加通知
 		var title = fmt.Sprintf("%v向您发起了咨询预约(%v)，请及时确认", formData.Name, methodName)
-		var no = common.Notification{Title: title, Desc: ""}
+		var no = common.Notification{Title: title, Desc: "", Type: "counseling"}
 		common.AddNotification(common.GetUserIDByCID(*(formData.CID)), no)
 
 		resp.Code = 1
@@ -76,7 +76,6 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 	var prevStatus string
 	var uuID int
 	var cID int
-	var resp common.Response
 	var updateStr = "update counseling_record set status=?"
 
 	var queryStr = fmt.Sprintf("select c_id, u_id, status from counseling_record where id=%v", recordID)
@@ -101,10 +100,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 			if operation == 0 {
 				updateStr += fmt.Sprintf(", cancel_reason1=? where id=%v", recordID)
 				if args.CancelReason2 != nil {
-					if success := utils.UpdateDB(updateStr, "cancel", args.CancelReason2); !success {
-						return -1, "更新进度失败"
-					}
-					return 1, "ok"
+					utils.UpdateDB(updateStr, "cancel", *(args.CancelReason2))
 				} else {
 					return 0, "取消理由不能为空"
 				}
@@ -113,53 +109,112 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 				if args.StartTime != nil {
 					if args.Location != nil {
 						updateStr += fmt.Sprintf(", location=? where id=%v", recordID)
+						utils.UpdateDB(updateStr, "wait_confirm", *(args.StartTime), *(args.Location))
 					} else {
 						updateStr += fmt.Sprintf(" where id=%v", recordID)
+						utils.UpdateDB(updateStr, "wait_confirm", *(args.StartTime))
 					}
-					if success := utils.UpdateDB(updateStr, "wait_confirm", args.StartTime, args.Location); !success {
-						return -1, "更新进度失败"
-					}
-					return 1, "ok"
 				} else {
 					return 0, "确认时间不能为空"
 				}
+			} else {
+				return 0, "非法操作，必须为同意(1)或拒绝(0)"
 			}
 		}
 
 		// 咨询者操作
 		if userType == 2 {
 			if operation == 1 {
-				return 0, "非法操作，咨询者无法主动协商进度"
-			}
-			if args.CancelReason1 != nil {
-				updateStr += fmt.Sprintf(", cancel_reason1=? where id=%v", recordID)
-				if success := utils.UpdateDB(updateStr, "cancel", args.CancelReason1); !success {
-					return -1, "更新进度失败"
+				return 0, "非法操作，咨询者无法主动协商咨询时间"
+			} else if operation == 0 {
+				if args.CancelReason1 != nil {
+					updateStr += fmt.Sprintf(", cancel_reason1=? where id=%v", recordID)
+					utils.UpdateDB(updateStr, "cancel", *(args.CancelReason1))
 				} else {
-					return 1, "ok"
+					return 0, "取消理由不能为空" // 咨询者理由为选择项
 				}
 			} else {
-				return 0, "取消理由不能为空"
+				return 0, "非法操作，必须为同意(1)或拒绝(0)"
 			}
 		}
 
 	case "wait_confirm":
 		if userType == 2 {
-			if (operation == 1) {
-				if args.StartTime {
+			if operation == 1 {
+				if args.StartTime != nil {
 					updateStr += ", start_time=?"
+					if args.Location != nil {
+						updateStr += fmt.Sprintf(", location=? where id=%v", recordID)
+						utils.UpdateDB(updateStr, "wait_counseling", *(args.StartTime), *(args.Location))
+					} else {
+						updateStr += fmt.Sprintf(" where id=%v", recordID)
+						utils.UpdateDB(updateStr, "wait_counseling", *(args.StartTime))
+					}
+				} else {
+					updateStr += fmt.Sprintf(" where id=%v", recordID)
+					utils.UpdateDB(updateStr, "wait_counseling")
 				}
-				if args.Location {
-					updateStr += ", location=?"
+			} else if operation == 0 {
+				if args.CancelReason1 != nil {
+					updateStr += fmt.Sprintf(", cancel_reason1=? where id=%v", recordID)
+					utils.UpdateDB(updateStr, "cancel", *(args.CancelReason1))
+				} else {
+					return 0, "取消理由不能为空" // 咨询者理由为选择项
 				}
-				updateStr += fmt.Sprintf(" where id=%v", recordID)
-				if ()
-				if success := utils.UpdateDB(updateStr, "wait_counseling", *(args.Location), *(args.Location))
 			} else {
-				return 0, "已协商的咨询无法取消"
+				return 0, "非法操作，必须为同意(1)或拒绝(0)"
 			}
 		} else {
 			return -2, "咨询师无法确认协商结果"
 		}
+
+	case "wait_counseling":
+		if userType == 2 {
+			if operation == 1 {
+				updateStr += fmt.Sprintf(" where id=%v", recordID)
+				utils.UpdateDB(updateStr, "wait_comment")
+			} else if operation == 0 {
+				if args.CancelReason1 != nil {
+					updateStr += fmt.Sprintf(", cancel_reason1=? where id=%v", recordID)
+					utils.UpdateDB(updateStr, "wait_comment", args.CancelReason1)
+				} else {
+					return 0, "取消理由不能为空" // 此时取消不退款
+				}
+			} else {
+				return 0, "非法操作，必须为同意(1)或拒绝(0)"
+			}
+		} else {
+			return -2, "咨询师无法操作"
+		}
+
+	case "wait_comment":
+		if userType == 2 {
+			if operation == 1 {
+				updateStr += fmt.Sprintf(", rating_score=?, rating_text=?, letters=? where id=%v", recordID)
+				utils.UpdateDB(updateStr, "finish", args.RatingScore, args.RatingText, args.Letters)
+			} else {
+				return 0, "非法操作，只能确认评价"
+			}
+		} else {
+			return -2, "咨询师无法操作"
+		}
+
+	case "finish":
+		// 更新感谢信
+		if userType == 2 {
+			if args.Letters != nil {
+				updateStr += fmt.Sprintf(", letters=? where id=%v", recordID)
+				utils.UpdateDB(updateStr, "finish", args.Letters)
+			} else {
+				return 0, "感谢信不能为空"
+			}
+		} else {
+			return -2, "咨询师无法操作"
+		}
+
+	default:
+		return -1, "咨询状态错误"
 	}
+
+	return 1, "ok"
 }

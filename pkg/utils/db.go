@@ -2,6 +2,7 @@ package utils
 
 import (
 	"database/sql"
+	"fmt"
 
 	_ "github.com/go-sql-driver/mysql" // mysql driver
 )
@@ -60,5 +61,6 @@ func UpdateDB(str string, args ...interface{}) bool {
 	if rows, _ := res.RowsAffected(); rows == 1 {
 		return true
 	}
+	fmt.Printf("更新失败！")
 	return false
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -108,11 +109,19 @@ func AppointProcessHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid request", http.StatusForbidden)
 			return
 		}
-		var recordID = pathArr[4]
-		var operation = pathArr[5]
+		recordID, _ := strconv.Atoi(pathArr[4])
+		operation, _ := strconv.Atoi(pathArr[5])
 
-		//
+		var args processArgs
+		form, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(form, &args)
+		utils.CheckErr(err)
 
+		code, msg := appointProcess(uid, userType, recordID, operation, args)
+		var resp = common.Response{Code: code, Message: msg}
+
+		resJSON, _ := json.Marshal(resp)
+		fmt.Fprintln(w, string(resJSON))
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
