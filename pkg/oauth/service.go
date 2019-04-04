@@ -90,12 +90,13 @@ func applyCounselor(form ApplyForm, uid int) (string, bool) {
 		applyRes.Code = 0
 		applyRes.Message = "账户已绑定咨询师，可直接登录"
 	} else {
-		if _, status := utils.InsertDB(insertStr, form.Name, form.Gender, form.Description, form.WorkYears, form.Motto, form.AudioPrice, form.VideoPrice, form.FtfPrice, uid); status {
+		if cid, status := utils.InsertDB(insertStr, form.Name, form.Gender, form.Description, form.WorkYears, form.Motto, form.AudioPrice, form.VideoPrice, form.FtfPrice, uid); status {
 			applyRes.Code = 1
 			applyRes.Message = "注册成功"
 			handleApplyCity(form.City, uid)
 			handleApplyUserType(uid)
 			handleApplyTopic(form.Topic, form.OtherTopic, uid)
+			handleApplyDetail(int(cid), form.Detail)
 		} else {
 			fmt.Println("新增咨询师失败，数据库插入错误！")
 			return "", false
@@ -155,4 +156,13 @@ func handleApplyTopic(topic string, otherTopic string, uid int) {
 		fmt.Println("新增咨询师，修改咨询主题出错！")
 	}
 	rows.Close()
+}
+
+// 咨询师入驻 -> 咨询师个人简介详情
+func handleApplyDetail(cid int, details []counselorDetail) {
+	var insertStr = "insert into counselor_detail set c_id=?, title=?, content=?"
+
+	for _, detail := range details {
+		utils.InsertDB(insertStr, cid, detail.Title, detail.Content)
+	}
 }
