@@ -193,3 +193,25 @@ func queryMessage(uid int) []common.Message {
 
 	return messages
 }
+
+// 查询咨询记录，按ID查询
+func queryCounselingRecordByID(userType int, id int, rID int) *(common.RecordForm) {
+	var r common.RecordForm
+	var queryStr = "select id, c_id, method, times, name, age, gender, phone, contact_phone, contact_name, contact_rel, `desc`, status, create_time, start_time, location, cancel_reason1, cancel_reason2, rating_score, rating_text, letter from counseling_record where"
+	if userType == 1 {
+		queryStr = fmt.Sprintf("%v c_id=%v and id=%v", queryStr, id, rID)
+	} else {
+		queryStr = fmt.Sprintf("%v u_id=%v and id=%v", queryStr, id, rID)
+	}
+
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Scan(&r.ID, &r.CID, &r.Method, &r.Times, &r.Name, &r.Age, &r.Gender, &r.Phone, &r.ContactPhone, &r.ContactName, &r.ContactRel, &r.Desc, &r.Status, &r.CreateTime, &r.StartTime, &r.Location, &r.CancelReason1, &r.CancelReason2, &r.RatingScore, &r.RatingText, &r.Letter)
+		r.CounselorName = common.GetCounselorNameByCID(r.CID)
+		r.Method = strings.Replace(r.Method, "\\", "", -1)
+
+		rows.Close()
+		return &r
+	}
+	return nil
+}

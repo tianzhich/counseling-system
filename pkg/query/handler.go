@@ -125,25 +125,45 @@ func CounselingRecordHandler(w http.ResponseWriter, r *http.Request) {
 	var uid int
 	var cid int
 	var userType int
-	var records []common.RecordForm
+	var resp common.Response
 
 	if uid, userType = common.IsUserLogin(r); uid == -1 {
 		http.Error(w, "Not Loggin", http.StatusUnauthorized)
 		return
 	}
-	if userType == 1 {
-		cid = common.GetCounselorIDByUID(uid)
-		records = queryCounselingRecords(userType, cid)
+
+	// query by id
+	rid, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	if rid != 0 {
+		var uuid int
+		var record *(common.RecordForm)
+		if userType == 1 {
+			uuid = common.GetCounselorIDByUID(uid)
+		} else {
+			uuid = uid
+		}
+		if record = queryCounselingRecordByID(userType, uuid, rid); record != nil {
+			resp.Code = 1
+			resp.Message = "ok"
+			resp.Data = *(record)
+		} else {
+			resp.Code = 0
+			resp.Message = "非法查询ID"
+		}
 	} else {
-		records = queryCounselingRecords(userType, uid)
+		var records []common.RecordForm
+		if userType == 1 {
+			cid = common.GetCounselorIDByUID(uid)
+			records = queryCounselingRecords(userType, cid)
+		} else {
+			records = queryCounselingRecords(userType, uid)
+		}
+		resp.Code = 1
+		resp.Message = "ok"
+		resp.Data = records
 	}
 
-	var resp common.Response
-	resp.Code = 1
-	resp.Message = "ok"
-	resp.Data = records
 	resJSON, _ := json.Marshal(resp)
-
 	fmt.Fprintf(w, string(resJSON))
 }
 
