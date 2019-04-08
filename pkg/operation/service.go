@@ -21,11 +21,11 @@ func addCounselingRecord(formData common.RecordForm, uid int) (string, bool) {
 	params := methodReg.FindStringSubmatch(formData.Method)
 	var methodName = params[1]
 
-	if _, success := utils.InsertDB(insertStr, *(formData.CID), uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, "wait_contact"); success {
+	if _, success := utils.InsertDB(insertStr, formData.CID, uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, "wait_contact"); success {
 		// 增加通知
 		var title = fmt.Sprintf("%v向您发起了咨询预约(%v)，请及时确认", formData.Name, methodName)
 		var no = common.Notification{Title: title, Desc: "", Type: "counseling"}
-		common.AddNotification(common.GetUserIDByCID(*(formData.CID)), no)
+		common.AddNotification(common.GetUserIDByCID(formData.CID), no)
 
 		resp.Code = 1
 		resp.Message = "ok"
@@ -76,12 +76,13 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 	var prevStatus string
 	var uuID int
 	var cID int
+	var visitorName string
 	var updateStr = "update counseling_record set status=?"
 
-	var queryStr = fmt.Sprintf("select c_id, u_id, status from counseling_record where id=%v", recordID)
+	var queryStr = fmt.Sprintf("select c_id, u_id, status, name from counseling_record where id=%v", recordID)
 	rows := utils.QueryDB(queryStr)
 	if rows.Next() {
-		rows.Scan(&cID, &uuID, &prevStatus)
+		rows.Scan(&cID, &uuID, &prevStatus, &visitorName)
 		if userType == 1 && cID != common.GetCounselorIDByUID(uID) || (userType == 2 && uID != uuID) {
 			fmt.Println("咨询流程进度处理，非有效UID")
 			return -2, "非有效UID"
@@ -92,15 +93,22 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 	}
 	rows.Close()
 
+	var counselorName = common.GetCounselorNameByCID(cID)
+	var counselorUID = common.GetUserIDByCID(cID)
+	var no = common.Notification{Type: "counseling", Title: ""}
+	var notifUID int
+
 	// 逻辑判断处理
 	switch prevStatus {
 	case "wait_contact":
 		// 咨询师操作
 		if userType == 1 {
+			notifUID = uuID
 			if operation == 0 {
 				updateStr += fmt.Sprintf(", cancel_reason1=? where id=%v", recordID)
 				if args.CancelReason2 != nil {
 					utils.UpdateDB(updateStr, "cancel", *(args.CancelReason2))
+					no.Title = fmt.Sprintf("咨询师 %v 取消了您的咨询请求，点击查看详情", counselorName)
 				} else {
 					return 0, "取消理由不能为空"
 				}
@@ -114,6 +122,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 						updateStr += fmt.Sprintf(" where id=%v", recordID)
 						utils.UpdateDB(updateStr, "wait_confirm", *(args.StartTime))
 					}
+					no.Title = fmt.Sprintf("咨询师 %v 与您协商了咨询事宜，点击查看详情", counselorName)
 				} else {
 					return 0, "确认时间不能为空"
 				}
@@ -140,6 +149,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 
 	case "wait_confirm":
 		if userType == 2 {
+			notifUID = counselorUID
 			if operation == 1 {
 				if args.StartTime != nil {
 					updateStr += ", start_time=?"
@@ -154,10 +164,12 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 					updateStr += fmt.Sprintf(" where id=%v", recordID)
 					utils.UpdateDB(updateStr, "wait_counseling")
 				}
+				no.Title = fmt.Sprintf("%v 确认了咨询协商，请按时完成咨询，点击查看详情", visitorName)
 			} else if operation == 0 {
 				if args.CancelReason1 != nil {
 					updateStr += fmt.Sprintf(", cancel_reason1=? where id=%v", recordID)
 					utils.UpdateDB(updateStr, "cancel", *(args.CancelReason1))
+					no.Title = fmt.Sprintf("%v 取消了咨询，点击查看详情", visitorName)
 				} else {
 					return 0, "取消理由不能为空" // 咨询者理由为选择项
 				}
@@ -189,9 +201,14 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 
 	case "wait_comment":
 		if userType == 2 {
+			notifUID = counselorUID
 			if operation == 1 {
 				updateStr += fmt.Sprintf(", rating_score=?, rating_text=?, letters=? where id=%v", recordID)
-				utils.UpdateDB(updateStr, "finish", args.RatingScore, args.RatingText, args.Letters)
+				utils.UpdateDB(updateStr, "finish", *(args.RatingScore), *(args.RatingText), *(args.Letters))
+				if args.Letters != nil && *(args.Letters) != "" {
+					no.Type = "letter"
+					no.Title = fmt.Sprintf("您收到来自 %v 的一封感谢信，点击查看", visitorName)
+				}
 			} else {
 				return 0, "非法操作，只能确认评价"
 			}
@@ -202,6 +219,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 	case "finish":
 		// 更新感谢信
 		if userType == 2 {
+			notifUID = counselorUID
 			if args.Letters != nil {
 				updateStr += fmt.Sprintf(", letters=? where id=%v", recordID)
 				utils.UpdateDB(updateStr, "finish", args.Letters)
@@ -214,6 +232,11 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 
 	default:
 		return -1, "咨询状态错误"
+	}
+
+	// 更新通知
+	if no.Title != "" {
+		common.AddNotification(notifUID, no)
 	}
 
 	return 1, "ok"

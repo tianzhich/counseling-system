@@ -31,20 +31,28 @@ type Notification struct {
 
 // RecordForm xxx(咨询记录)
 type RecordForm struct {
-	ID           int    `json:"id"`
-	CID          *int   `json:"cID"`
-	Method       string `json:"method"`
-	Times        int    `json:"times"`
-	Name         string `json:"name"`
-	Age          int    `json:"age"`
-	Gender       int    `json:"gender"`
-	Phone        string `json:"phone"`
-	ContactPhone string `json:"contactPhone"`
-	ContactName  string `json:"contactName"`
-	ContactRel   string `json:"contactRel"`
-	Desc         string `json:"desc"`
-	Status       string `json:"status"`
-	CreateTime   string `json:"createTime"`
+	ID            int    `json:"id"`
+	CID           int    `json:"cID"`
+	CounselorName string `json:"counselorName"`
+	Method        string `json:"method"`
+	Times         int    `json:"times"`
+	Name          string `json:"name"`
+	Age           int    `json:"age"`
+	Gender        int    `json:"gender"`
+	Phone         string `json:"phone"`
+	ContactPhone  string `json:"contactPhone"`
+	ContactName   string `json:"contactName"`
+	ContactRel    string `json:"contactRel"`
+	Desc          string `json:"desc"`
+	Status        string `json:"status"`
+	CreateTime    string `json:"createTime"`
+	StartTime     string `json:"startTime"`
+	Location      string `json:"location"`
+	CancelReason1 string `json:"cancelReason1"`
+	CancelReason2 string `json:"cancelReason2"`
+	RatingScore   int    `json:"RatingScore"`
+	RatingText    string `json:"RatingText"`
+	Letter        string `json:"letter"`
 }
 
 // Message xxx(留言)

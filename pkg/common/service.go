@@ -91,6 +91,21 @@ func GetCounselorIDByUID(id int) int {
 	return cID
 }
 
+// GetCounselorNameByCID return counselor name by CID
+func GetCounselorNameByCID(id int) string {
+	var queryStr = fmt.Sprintf("select name from counselor where id=%v", id)
+	var name string
+
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Scan(&name)
+	} else {
+		fmt.Println("查找咨询师姓名失败！")
+	}
+	rows.Close()
+	return name
+}
+
 // GetNameByUID return the username or counselor name according to userID
 func GetNameByUID(uid int) string {
 	var name string
