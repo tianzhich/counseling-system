@@ -115,7 +115,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 			} else if operation == 1 {
 				updateStr += ", start_time=?"
 				if args.StartTime != nil {
-					if args.Location != nil {
+					if args.Location != nil && *(args.Location) != "" {
 						updateStr += fmt.Sprintf(", location=? where id=%v", recordID)
 						utils.UpdateDB(updateStr, "wait_confirm", *(args.StartTime), *(args.Location))
 					} else {
