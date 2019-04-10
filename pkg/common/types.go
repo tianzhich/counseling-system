@@ -54,6 +54,7 @@ type RecordForm struct {
 	RatingScore   int    `json:"RatingScore"`
 	RatingText    string `json:"RatingText"`
 	Letter        string `json:"letter"`
+	Price         int    `json:"price"`
 }
 
 // Message xxx(留言)

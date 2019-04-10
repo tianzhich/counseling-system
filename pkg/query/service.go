@@ -154,7 +154,7 @@ func queryNotifications(uID int) []common.Notification {
 // 查询咨询记录
 func queryCounselingRecords(userType int, id int) []common.RecordForm {
 	var records []common.RecordForm
-	var queryStr = "select id, c_id, method, times, name, age, gender, phone, contact_phone, contact_name, contact_rel, `desc`, status, create_time, start_time, location, cancel_reason1, cancel_reason2, rating_score, rating_text, letter from counseling_record where"
+	var queryStr = "select id, c_id, method, times, name, age, gender, phone, contact_phone, contact_name, contact_rel, `desc`, status, create_time, start_time, location, cancel_reason1, cancel_reason2, rating_score, rating_text, letter, price from counseling_record where"
 	if userType == 1 {
 		queryStr = fmt.Sprintf("%v c_id=%v", queryStr, id)
 	} else {
@@ -166,7 +166,7 @@ func queryCounselingRecords(userType int, id int) []common.RecordForm {
 	rows := utils.QueryDB(queryStr)
 	for rows.Next() {
 		var r common.RecordForm
-		rows.Scan(&r.ID, &r.CID, &r.Method, &r.Times, &r.Name, &r.Age, &r.Gender, &r.Phone, &r.ContactPhone, &r.ContactName, &r.ContactRel, &r.Desc, &r.Status, &r.CreateTime, &r.StartTime, &r.Location, &r.CancelReason1, &r.CancelReason2, &r.RatingScore, &r.RatingText, &r.Letter)
+		rows.Scan(&r.ID, &r.CID, &r.Method, &r.Times, &r.Name, &r.Age, &r.Gender, &r.Phone, &r.ContactPhone, &r.ContactName, &r.ContactRel, &r.Desc, &r.Status, &r.CreateTime, &r.StartTime, &r.Location, &r.CancelReason1, &r.CancelReason2, &r.RatingScore, &r.RatingText, &r.Letter, &r.Price)
 		r.CounselorName = common.GetCounselorNameByCID(r.CID)
 		r.Method = strings.Replace(r.Method, "\\", "", -1)
 		records = append(records, r)

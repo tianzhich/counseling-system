@@ -11,7 +11,7 @@ import (
 )
 
 func addCounselingRecord(formData common.RecordForm, uid int) (string, bool) {
-	var insertStr = "insert counseling_record set c_id=?, u_id=?, method=?, times=?, name=?, age=?, gender=?, phone=?, contact_phone=?, contact_name=?, contact_rel=?, `desc`=?, status=?"
+	var insertStr = "insert counseling_record set c_id=?, u_id=?, method=?, times=?, name=?, age=?, gender=?, phone=?, contact_phone=?, contact_name=?, contact_rel=?, `desc`=?, price=?, status=?"
 	var resp common.Response
 
 	// method含双引号，插入数据库前进行转义处理
@@ -21,7 +21,7 @@ func addCounselingRecord(formData common.RecordForm, uid int) (string, bool) {
 	params := methodReg.FindStringSubmatch(formData.Method)
 	var methodName = params[1]
 
-	if rID, success := utils.InsertDB(insertStr, formData.CID, uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, "wait_contact"); success {
+	if rID, success := utils.InsertDB(insertStr, formData.CID, uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, formData.Price, "wait_contact"); success {
 		// 增加通知
 		var title = fmt.Sprintf("%v向您发起了咨询预约(%v)，请及时确认", formData.Name, methodName)
 		var no = common.Notification{Title: title, Desc: "", Type: "counseling", Payload: int(rID)}
