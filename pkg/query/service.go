@@ -140,11 +140,11 @@ func queryCounselor(id int) *counselor {
 // 查看未读通知消息
 func queryNotifications(uID int) []common.Notification {
 	var notis []common.Notification
-	var queryStr = fmt.Sprintf("select id, type, title, `desc`, create_time from notification where u_id=%v and is_read=0 ORDER BY create_time DESC", uID)
+	var queryStr = fmt.Sprintf("select id, type, title, `desc`, create_time, payload from notification where u_id=%v and is_read=0 ORDER BY create_time DESC", uID)
 	rows := utils.QueryDB(queryStr)
 	for rows.Next() {
 		var noti common.Notification
-		rows.Scan(&noti.ID, &noti.Type, &noti.Title, &noti.Desc, &noti.Time)
+		rows.Scan(&noti.ID, &noti.Type, &noti.Title, &noti.Desc, &noti.Time, &noti.Payload)
 		notis = append(notis, noti)
 	}
 	rows.Close()
