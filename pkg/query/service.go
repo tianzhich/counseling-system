@@ -8,7 +8,7 @@ import (
 )
 
 // 咨询师列表
-func queryCounselors(p pagination, option *filterOption, orderBy string, like string) (pagination, []counselor) {
+func queryCounselors(p pagination, option *filterOption, orderBy string, like string) (pagination, []common.Counselor) {
 	var queryCountStr = "select count(*) from counselor"
 	var queryStr = "select id, u_id, name, gender, description, work_years, good_rate, motto, audio_price, video_price, ftf_price, city, topic, topic_other, create_time from counselor"
 
@@ -86,14 +86,14 @@ func queryCounselors(p pagination, option *filterOption, orderBy string, like st
 
 	// empty
 	if count == 0 || count <= firstRecordIndex {
-		var emptyCounslor = []counselor{}
+		var emptyCounslor = []common.Counselor{}
 		return pp, emptyCounslor
 	}
 
-	var counselorList []counselor
+	var counselorList []common.Counselor
 	rows := utils.QueryDB(queryStr)
 	for rows.Next() {
-		var c counselor
+		var c common.Counselor
 		var cityID *int
 		var topicID int
 		rows.Scan(&c.ID, &c.UID, &c.Name, &c.Gender, &c.Description, &c.WorkYears, &c.GoodRate, &c.Motto, &c.AudioPrice, &c.VideoPrice, &c.FtfPrice, &cityID, &topicID, &c.TopicOther, &c.ApplyTime)
@@ -113,12 +113,12 @@ func queryCounselors(p pagination, option *filterOption, orderBy string, like st
 	return pp, counselorList
 }
 
-func queryCounselor(id int) *counselor {
+func queryCounselor(id int) *(common.Counselor) {
 	var queryStr = fmt.Sprintf("select id, u_id, name, gender, description, work_years, good_rate, motto, audio_price, video_price, ftf_price, city, topic, topic_other, create_time from counselor where id='%v'", id)
 
 	rows := utils.QueryDB(queryStr)
 	if rows.Next() {
-		var c counselor
+		var c common.Counselor
 		var cityID *int
 		var topicID int
 		rows.Scan(&c.ID, &c.UID, &c.Name, &c.Gender, &c.Description, &c.WorkYears, &c.GoodRate, &c.Motto, &c.AudioPrice, &c.VideoPrice, &c.FtfPrice, &cityID, &topicID, &c.TopicOther, &c.ApplyTime)

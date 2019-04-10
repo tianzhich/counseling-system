@@ -24,7 +24,7 @@ func CounselorListHandler(w http.ResponseWriter, r *http.Request) {
 		like := r.URL.Query().Get("like")
 
 		var pp pagination
-		var counselors []counselor
+		var counselors []common.Counselor
 
 		// filters data body
 		res, _ := ioutil.ReadAll(r.Body)
@@ -63,7 +63,7 @@ func NewlyCounselorsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var pp pagination
-	var counselors []counselor
+	var counselors []common.Counselor
 
 	pp, counselors = queryCounselors(p, nil, "ORDER BY create_time DESC", "")
 

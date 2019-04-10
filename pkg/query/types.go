@@ -18,27 +18,8 @@ type filterOption struct {
 	City   *int `json:"city"`
 }
 
-// counselor list
-type counselor struct {
-	ID          int              `json:"id"`
-	UID         int              `json:"uid"`
-	Name        string           `json:"name"`
-	Gender      int              `json:"gender"`
-	Description string           `json:"description"`
-	WorkYears   int              `json:"workYears"`
-	GoodRate    *int             `json:"goodRate"`
-	Motto       string           `json:"motto"`
-	AudioPrice  int              `json:"audioPrice"`
-	VideoPrice  int              `json:"videoPrice"`
-	FtfPrice    int              `json:"ftfPrice"`
-	City        *common.DictInfo `json:"city"`
-	Topic       common.DictInfo  `json:"topic"`
-	TopicOther  string           `json:"topicOther"`
-	ApplyTime   string           `json:"applyTime"`
-}
-
 // counselor response data
 type counselorRespData struct {
 	pagination
-	List []counselor `json:"list"`
+	List []common.Counselor `json:"list"`
 }

@@ -28,3 +28,40 @@ func CounselorFilterHandler(w http.ResponseWriter, r *http.Request) {
 	resJSON, _ := json.Marshal(res)
 	fmt.Fprintln(w, string(resJSON))
 }
+
+// PreHandler return loggin user info
+func PreHandler(w http.ResponseWriter, r *http.Request) {
+	var uid int
+	if uid, _ = common.IsUserLogin(r); uid == -1 {
+		http.Error(w, "Authentication failed", http.StatusUnauthorized)
+		return
+	}
+
+	var res common.Response
+
+	res.Data = getLogginUserInfo(uid)
+	res.Code = 1
+	res.Message = "ok"
+
+	resJSON, _ := json.Marshal(res)
+	fmt.Fprintln(w, string(resJSON))
+}
+
+// PreCounselorHandler return the loggin counselor info
+func PreCounselorHandler(w http.ResponseWriter, r *http.Request) {
+	var uid int
+	var userType int
+	if uid, userType = common.IsUserLogin(r); uid == -1 || userType != 1 {
+		http.Error(w, "Authentication failed", http.StatusUnauthorized)
+		return
+	}
+
+	var res common.Response
+
+	res.Data = getLogginCounselorInfo(uid)
+	res.Code = 1
+	res.Message = "ok"
+
+	resJSON, _ := json.Marshal(res)
+	fmt.Fprintln(w, string(resJSON))
+}

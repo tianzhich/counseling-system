@@ -67,3 +67,22 @@ type Message struct {
 	Detail       string `json:"detail"`
 	Time         string `json:"time"`
 }
+
+// Counselor info
+type Counselor struct {
+	ID          int       `json:"id"`
+	UID         int       `json:"uid"`
+	Name        string    `json:"name"`
+	Gender      int       `json:"gender"`
+	Description string    `json:"description"`
+	WorkYears   int       `json:"workYears"`
+	GoodRate    *int      `json:"goodRate"`
+	Motto       string    `json:"motto"`
+	AudioPrice  int       `json:"audioPrice"`
+	VideoPrice  int       `json:"videoPrice"`
+	FtfPrice    int       `json:"ftfPrice"`
+	City        *DictInfo `json:"city"`
+	Topic       DictInfo  `json:"topic"`
+	TopicOther  string    `json:"topicOther"`
+	ApplyTime   string    `json:"applyTime"`
+}
