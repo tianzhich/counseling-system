@@ -21,10 +21,10 @@ func addCounselingRecord(formData common.RecordForm, uid int) (string, bool) {
 	params := methodReg.FindStringSubmatch(formData.Method)
 	var methodName = params[1]
 
-	if _, success := utils.InsertDB(insertStr, formData.CID, uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, "wait_contact"); success {
+	if rID, success := utils.InsertDB(insertStr, formData.CID, uid, methodStr, formData.Times, formData.Name, formData.Age, formData.Gender, formData.Phone, formData.ContactPhone, formData.ContactName, formData.ContactRel, formData.Desc, "wait_contact"); success {
 		// 增加通知
 		var title = fmt.Sprintf("%v向您发起了咨询预约(%v)，请及时确认", formData.Name, methodName)
-		var no = common.Notification{Title: title, Desc: "", Type: "counseling"}
+		var no = common.Notification{Title: title, Desc: "", Type: "counseling", Payload: int(rID)}
 		common.AddNotification(common.GetUserIDByCID(formData.CID), no)
 
 		resp.Code = 1
@@ -95,7 +95,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 
 	var counselorName = common.GetCounselorNameByCID(cID)
 	var counselorUID = common.GetUserIDByCID(cID)
-	var no = common.Notification{Type: "counseling", Title: ""}
+	var no = common.Notification{Type: "counseling", Title: "", Payload: recordID}
 	var notifUID int
 
 	// 逻辑判断处理

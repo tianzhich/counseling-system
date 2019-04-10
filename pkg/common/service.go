@@ -54,9 +54,9 @@ func IsUserLogin(r *http.Request) (int, int) {
 
 // AddNotification to notification table
 func AddNotification(uid int, no Notification) {
-	var insertStr = fmt.Sprintf("insert notification set u_id=%v, type=?, title=?, `desc`=?", uid)
+	var insertStr = fmt.Sprintf("insert notification set u_id=%v, type=?, title=?, `desc`=?, payload=?", uid)
 
-	if _, success := utils.InsertDB(insertStr, no.Type, no.Title, no.Desc); !success {
+	if _, success := utils.InsertDB(insertStr, no.Type, no.Title, no.Desc, no.Payload); !success {
 		fmt.Println("新增通知失败！")
 	}
 }
