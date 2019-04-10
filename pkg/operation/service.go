@@ -203,9 +203,9 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 		if userType == 2 {
 			notifUID = counselorUID
 			if operation == 1 {
-				updateStr += fmt.Sprintf(", rating_score=?, rating_text=?, letters=? where id=%v", recordID)
-				utils.UpdateDB(updateStr, "finish", *(args.RatingScore), *(args.RatingText), *(args.Letters))
-				if args.Letters != nil && *(args.Letters) != "" {
+				updateStr += fmt.Sprintf(", rating_score=?, rating_text=?, letter=? where id=%v", recordID)
+				utils.UpdateDB(updateStr, "finish", *(args.RatingScore), *(args.RatingText), *(args.Letter))
+				if args.Letter != nil && *(args.Letter) != "" {
 					no.Type = "letter"
 					no.Title = fmt.Sprintf("您收到来自 %v 的一封感谢信，点击查看", visitorName)
 				}
@@ -220,9 +220,11 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 		// 更新感谢信
 		if userType == 2 {
 			notifUID = counselorUID
-			if args.Letters != nil {
-				updateStr += fmt.Sprintf(", letters=? where id=%v", recordID)
-				utils.UpdateDB(updateStr, "finish", args.Letters)
+			if args.Letter != nil {
+				updateStr += fmt.Sprintf(", letter=? where id=%v", recordID)
+				utils.UpdateDB(updateStr, "finish", *(args.Letter))
+				no.Type = "letter"
+				no.Title = fmt.Sprintf("您收到来自 %v 的一封感谢信，点击查看", visitorName)
 			} else {
 				return 0, "感谢信不能为空"
 			}

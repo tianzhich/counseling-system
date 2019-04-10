@@ -8,5 +8,5 @@ type processArgs struct {
 	CancelReason2 *string `json:"cancelReason2"`
 	RatingScore   *int    `json:"ratingScore"`
 	RatingText    *string `json:"ratingText"`
-	Letters       *string `json:"letters"`
+	Letter        *string `json:"letter"`
 }

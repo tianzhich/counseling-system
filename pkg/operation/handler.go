@@ -114,8 +114,10 @@ func AppointProcessHandler(w http.ResponseWriter, r *http.Request) {
 
 		var args processArgs
 		form, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(form, &args)
-		utils.CheckErr(err)
+		if len(form) > 0 {
+			err := json.Unmarshal(form, &args)
+			utils.CheckErr(err)
+		}
 
 		code, msg := appointProcess(uid, userType, recordID, operation, args)
 		var resp = common.Response{Code: code, Message: msg}

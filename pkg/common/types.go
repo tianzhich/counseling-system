@@ -51,8 +51,8 @@ type RecordForm struct {
 	Location      string `json:"location"`
 	CancelReason1 string `json:"cancelReason1"`
 	CancelReason2 string `json:"cancelReason2"`
-	RatingScore   int    `json:"RatingScore"`
-	RatingText    string `json:"RatingText"`
+	RatingScore   int    `json:"ratingScore"`
+	RatingText    string `json:"ratingText"`
 	Letter        string `json:"letter"`
 	Price         int    `json:"price"`
 }
