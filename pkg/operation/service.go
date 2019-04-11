@@ -243,3 +243,27 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 
 	return 1, "ok"
 }
+
+// update user info
+func updateUserInfo(uID int, userInfo common.User) bool {
+	var updateStr = fmt.Sprintf("update user set phone=?, email=? where id=%v", uID)
+
+	if sucess := utils.UpdateDB(updateStr, userInfo.Phone, userInfo.Email); !sucess {
+		fmt.Println("更新用户信息失败")
+		return false
+	}
+	return true
+}
+
+// update counselor info
+func updateCounselorInfo(uID int, info common.CounselorForm) bool {
+	var updateStr = fmt.Sprintf("update counselor set motto=?, audio_price=?, video_price=?, ftf_price=? where u_id=%v", uID)
+
+	if success := utils.UpdateDB(updateStr, info.Motto, info.AudioPrice, info.VideoPrice, info.FtfPrice); success {
+		common.HandleApplyCity(info.City, uID)
+	} else {
+		fmt.Println("更新咨询师信息失败")
+		return false
+	}
+	return true
+}

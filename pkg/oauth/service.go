@@ -80,7 +80,7 @@ func signin(form SigninForm) (common.Response, int) {
 	return r, uid
 }
 
-func applyCounselor(form ApplyForm, uid int) (string, bool) {
+func applyCounselor(form common.CounselorForm, uid int) (string, bool) {
 	var queryStr = fmt.Sprintf("select * from `counselor` where `u_id` ='%v'", uid)
 	var insertStr = "insert counselor set name=?, gender=?, description=?, work_years=?, motto=?, audio_price=?, video_price=?, ftf_price=?, u_id=?"
 	var applyRes common.Response
@@ -93,7 +93,8 @@ func applyCounselor(form ApplyForm, uid int) (string, bool) {
 		if cid, status := utils.InsertDB(insertStr, form.Name, form.Gender, form.Description, form.WorkYears, form.Motto, form.AudioPrice, form.VideoPrice, form.FtfPrice, uid); status {
 			applyRes.Code = 1
 			applyRes.Message = "注册成功"
-			handleApplyCity(form.City, uid)
+
+			common.HandleApplyCity(form.City, uid)
 			handleApplyUserType(uid)
 			handleApplyTopic(form.Topic, form.OtherTopic, uid)
 			handleApplyDetail(int(cid), form.Detail)
@@ -106,31 +107,6 @@ func applyCounselor(form ApplyForm, uid int) (string, bool) {
 
 	resJSON, _ := json.Marshal(applyRes)
 	return string(resJSON), true
-}
-
-// 咨询师入驻 -> 面对面咨询城市的判断处理
-func handleApplyCity(city string, uid int) {
-	if city == "" {
-		return
-	}
-
-	var queryStr = fmt.Sprintf("select * from dict_info where `type_code`=8 and `info_name`='%v'", city)
-	existRows := utils.QueryDB(queryStr)
-
-	if existRows.Next() {
-		return
-	}
-	existRows.Close()
-
-	cid := utils.QueryDBRow("select count(*) from dict_info where `type_code`=8") + 1
-	if rowID, status := utils.InsertDB("insert dict_info set type_code=?, info_code=?, info_name=?", 8, cid, city); status {
-		updateStr := fmt.Sprintf("update counselor set city=? where u_id='%v'", uid)
-		if updateStatus := utils.UpdateDB(updateStr, rowID); updateStatus {
-			return
-		}
-	} else {
-		fmt.Println("新增咨询城市出错！")
-	}
 }
 
 // 咨询师入驻 -> 修改用户类型
@@ -159,7 +135,7 @@ func handleApplyTopic(topic string, otherTopic string, uid int) {
 }
 
 // 咨询师入驻 -> 咨询师个人简介详情
-func handleApplyDetail(cid int, details []counselorDetail) {
+func handleApplyDetail(cid int, details []common.CounselorDetail) {
 	var insertStr = "insert into counselor_detail set c_id=?, title=?, content=?"
 
 	for _, detail := range details {

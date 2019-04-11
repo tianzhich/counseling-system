@@ -86,3 +86,35 @@ type Counselor struct {
 	TopicOther  string    `json:"topicOther"`
 	ApplyTime   string    `json:"applyTime"`
 }
+
+// User info
+type User struct {
+	ID         int    `json:"id"`
+	CID        *int   `json:"cID"`
+	UserName   string `json:"userName"`
+	Phone      string `json:"phone"`
+	Email      string `json:"email"`
+	CreateTime string `json:"createTime"`
+}
+
+// CounselorForm 咨询师注册，更新信息
+type CounselorForm struct {
+	Name        string            `json:"name"`
+	Gender      int               `json:"gender"`
+	WorkYears   int               `json:"workYears"`
+	Description string            `json:"description"`
+	Motto       string            `json:"motto"`
+	Detail      []CounselorDetail `json:"detail"`
+	AudioPrice  int               `json:"audioPrice"`
+	VideoPrice  int               `json:"videoPrice"`
+	FtfPrice    int               `json:"ftfPrice"`
+	City        string            `json:"city"`
+	Topic       string            `json:"topic"`
+	OtherTopic  string            `json:"otherTopic"`
+}
+
+// CounselorDetail xxx
+type CounselorDetail struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}

@@ -128,3 +128,54 @@ func AppointProcessHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 }
+
+// UpdateInfoHandler 更新用户或咨询师信息
+func UpdateInfoHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		var uid int
+		var userType int
+		if uid, userType = common.IsUserLogin(r); uid == -1 {
+			http.Error(w, "Authentication failed", http.StatusUnauthorized)
+			return
+		}
+
+		var infoType = r.URL.Query().Get("type")
+		body, err := ioutil.ReadAll(r.Body)
+		utils.CheckErr(err)
+		var resp common.Response
+
+		if infoType == "1" {
+			if userType == 1 {
+				var data common.CounselorForm
+				err := json.Unmarshal(body, &data)
+				utils.CheckErr(err)
+				if success := updateCounselorInfo(uid, data); !success {
+					resp.Code = 0
+					resp.Message = "更新咨询师信息出错，请联系管理员"
+				} else {
+					resp.Code = 1
+					resp.Message = "ok"
+				}
+			} else {
+				http.Error(w, "No access", http.StatusForbidden)
+				return
+			}
+		} else if infoType == "2" {
+			var data common.User
+			err := json.Unmarshal(body, &data)
+			utils.CheckErr(err)
+			if sucess := updateUserInfo(uid, data); !sucess {
+				resp.Code = 0
+				resp.Message = "更新用户信息出错，请联系管理员"
+			} else {
+				resp.Code = 1
+				resp.Message = "ok"
+			}
+		} else {
+			http.Error(w, "Invalid request param", http.StatusBadRequest)
+			return
+		}
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+}

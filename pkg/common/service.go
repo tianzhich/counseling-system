@@ -133,3 +133,31 @@ func GetNameByUID(uid int) string {
 	}
 	return name
 }
+
+// HandleApplyCity 面对面咨询城市的插入更新处理
+func HandleApplyCity(city string, uid int) {
+	if city == "" {
+		return
+	}
+	var cityID int
+	var queryStr = fmt.Sprintf("select id from dict_info where `type_code`=8 and `info_name`='%v'", city)
+	existRows := utils.QueryDB(queryStr)
+
+	if existRows.Next() {
+		existRows.Scan(&cityID)
+		existRows.Close()
+	} else {
+		infoCode := utils.QueryDBRow("select count(*) from dict_info where `type_code`=8") + 1
+		if cID, success := utils.InsertDB("insert dict_info set type_code=?, info_code=?, info_name=?", 8, infoCode, city); success {
+			cityID = int(cID)
+		} else {
+			fmt.Println("新增咨询城市出错！")
+			return
+		}
+	}
+
+	updateStr := fmt.Sprintf("update counselor set city=? where u_id='%v'", uid)
+	if success := utils.UpdateDB(updateStr, cityID); !success {
+		fmt.Println("更新咨询师所在城市出错")
+	}
+}

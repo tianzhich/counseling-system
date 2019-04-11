@@ -14,28 +14,6 @@ type SigninForm struct {
 	Password string `json:"password"`
 }
 
-// counselorDetail xxx
-type counselorDetail struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
-}
-
-// ApplyForm xxx
-type ApplyForm struct {
-	Name        string            `json:"name"`
-	Gender      int               `json:"gender"`
-	WorkYears   int               `json:"workYears"`
-	Description string            `json:"description"`
-	Motto       string            `json:"motto"`
-	Detail      []counselorDetail `json:"detail"`
-	AudioPrice  int               `json:"audioPrice"`
-	VideoPrice  int               `json:"videoPrice"`
-	FtfPrice    int               `json:"ftfPrice"`
-	City        string            `json:"city"`
-	Topic       string            `json:"topic"`
-	OtherTopic  string            `json:"otherTopic"`
-}
-
 type authData struct {
 	UserType int `json:"userType"`
 }

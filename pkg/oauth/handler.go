@@ -92,7 +92,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		res, _ := ioutil.ReadAll(r.Body)
 
-		var formData ApplyForm
+		var formData common.CounselorForm
 		err := json.Unmarshal(res, &formData)
 		utils.CheckErr(err)
 
