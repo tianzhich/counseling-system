@@ -175,6 +175,8 @@ func UpdateInfoHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid request param", http.StatusBadRequest)
 			return
 		}
+		resJSON, _ := json.Marshal(resp)
+		fmt.Fprintf(w, string(resJSON))
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}

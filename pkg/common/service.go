@@ -85,7 +85,6 @@ func GetCounselorIDByUID(id int) int {
 	if rows.Next() {
 		rows.Scan(&cID)
 	} else {
-		fmt.Println("查找咨询师c_id失败！")
 		cID = -1
 	}
 	rows.Close()
