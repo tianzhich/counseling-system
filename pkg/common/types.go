@@ -126,7 +126,7 @@ type Article struct {
 	Title    string `json:"title"`
 	Excerpt  string `json:"excerpt"`
 	Content  string `json:"content"`
-	IsDraft  bool   `json:"isDraft"`
+	IsDraft  int    `json:"isDraft"`
 	Category string `json:"category"`
 	Tags     string `json:"tags"`
 	CID      int    `json:"cID"`

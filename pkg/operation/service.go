@@ -282,7 +282,7 @@ func articleProcess(cID int, args common.Article) bool {
 
 	// 首次提交
 	dbStr = "insert into article set cover=?, title=?, content=?, excerpt=?, is_draft=?, category=?, tags=?, c_id=?"
-	if _, success := utils.InsertDB(dbStr, args.Cover, args.Title, args.Content, args.Excerpt, args.IsDraft, args.Category, args.Tags, args.CID); success {
+	if _, success := utils.InsertDB(dbStr, args.Cover, args.Title, args.Content, args.Excerpt, args.IsDraft, args.Category, args.Tags, cID); success {
 		return true
 	}
 	fmt.Println("插入文章失败")
