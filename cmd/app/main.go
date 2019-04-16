@@ -55,4 +55,5 @@ func operationHandlers(mux *(mux.Router)) {
 	mux.HandleFunc("/api/operation/addMessage", operation.AddMessageHandler)
 	mux.HandleFunc("/api/operation/appointProcess/{recordID}/{type}", operation.AppointProcessHandler)
 	mux.HandleFunc("/api/operation/updateInfo", operation.UpdateInfoHandler)
+	mux.HandleFunc("/api/operation/article", operation.AddArticleHandler)
 }

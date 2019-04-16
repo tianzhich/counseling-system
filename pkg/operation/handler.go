@@ -181,3 +181,38 @@ func UpdateInfoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 }
+
+// AddArticleHandler 保存文章草稿和提交文章
+func AddArticleHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		var uid int
+		var userType int
+		if uid, userType = common.IsUserLogin(r); uid == -1 {
+			http.Error(w, "Authentication failed", http.StatusUnauthorized)
+			return
+		} else if userType == 2 {
+			http.Error(w, "Access not allowed", http.StatusForbidden)
+		}
+
+		// handler
+		var cID = common.GetCounselorIDByUID(uid)
+		var args articleArgs
+		data, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(data, &args)
+		utils.CheckErr(err)
+		var resp common.Response
+
+		if success := articleProcess(cID, args); success {
+			resp.Code = 1
+			resp.Message = "ok"
+		} else {
+			resp.Code = 0
+			resp.Message = common.ServerErrorMessage
+		}
+
+		resJSON, _ := json.Marshal(resp)
+		fmt.Fprintln(w, string(resJSON))
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+}

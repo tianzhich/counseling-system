@@ -267,3 +267,24 @@ func updateCounselorInfo(uID int, info common.CounselorForm) bool {
 	}
 	return true
 }
+
+// 新增文章或保存草稿
+func articleProcess(cID int, args articleArgs) bool {
+	var dbStr string
+	if args.ID != nil {
+		dbStr = fmt.Sprintf("update article set cover=?, title=?, content=?, is_draft=?, category=?, tags=? where id=%v", *(args.ID))
+		if success := utils.UpdateDB(dbStr); success {
+			return true
+		}
+		fmt.Println("更新文章失败")
+		return false
+	}
+
+	// 首次提交
+	dbStr = "insert into article set cover=?, title=?, content=?, is_draft=?, category=?, tags=?, c_id=?"
+	if _, success := utils.InsertDB(dbStr); success {
+		return true
+	}
+	fmt.Println("插入文章失败")
+	return false
+}
