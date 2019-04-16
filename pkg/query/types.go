@@ -23,3 +23,13 @@ type counselorRespData struct {
 	pagination
 	List []common.Counselor `json:"list"`
 }
+
+type articleList struct {
+	pagination
+	List []common.Article `json:"list"`
+}
+
+type articleQueryArgs struct {
+	category *string
+	cID      *int
+}

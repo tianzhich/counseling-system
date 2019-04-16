@@ -184,4 +184,61 @@ func MessageHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(resJSON))
 }
 
-func 
+// ArticleHandler 返回文章信息
+// 带c_id查询需要校验权限
+// 带id查询单个文章，否则查询列表(支持翻页)
+func ArticleHandler(w http.ResponseWriter, r *http.Request) {
+	aID, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	var resp common.Response
+
+	// 查询List
+	if aID <= 0 {
+		// pagination
+		pageNum, _ := strconv.Atoi(r.URL.Query().Get("pageNum"))
+		pageSize, _ := strconv.Atoi(r.URL.Query().Get("pageSize"))
+		var p = pagination{
+			PageNum:  pageNum,
+			PageSize: pageSize,
+		}
+
+		// 按c_id查询，需要校验权限
+		cID, _ := strconv.Atoi(r.URL.Query().Get("cid"))
+		category := r.URL.Query().Get("category")
+		var queryArgs articleQueryArgs
+		if category != "" {
+			queryArgs.category = &category
+		}
+		if cID > 0 {
+			if uid, _ := common.IsUserLogin(r); cID != common.GetCounselorIDByUID(uid) {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				return
+			}
+			queryArgs.cID = &cID
+		}
+
+		// query
+		resp.Code = 1
+		resp.Message = "ok"
+		resp.Data = queryArticleList(queryArgs, p)
+
+		// result
+		resJSON, _ := json.Marshal(resp)
+		fmt.Fprintln(w, string(resJSON))
+		return
+	}
+
+	// 查询单个
+	var a *(common.Article)
+	if a = queryArticle(aID); a != nil {
+		resp.Code = 1
+		resp.Message = "ok"
+		resp.Data = *a
+	} else {
+		resp.Code = 0
+		resp.Message = "未知文章ID"
+	}
+	// result
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintln(w, string(resJSON))
+	return
+}

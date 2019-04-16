@@ -129,4 +129,5 @@ type Article struct {
 	Category string `json:"category"`
 	Tags     string `json:"tags"`
 	CID      int    `json:"cID"`
+	PostTime string `json:"postTime"`
 }
