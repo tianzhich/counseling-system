@@ -42,3 +42,18 @@ func getLogginCounselorInfo(uid int) common.Counselor {
 	rows.Close()
 	return c
 }
+
+// 文章草稿
+func getArticleDraft(cID int) *(common.Article) {
+	var queryStr = fmt.Sprintf("select id, cover, title, content, category, tags from article where is_draft=1 and c_id=%v", cID)
+	var a common.Article
+
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Scan(&a.ID, &a.Cover, &a.Title, &a.Content, &a.Category, &a.Tags)
+		rows.Close()
+		return &a
+	}
+	rows.Close()
+	return nil
+}

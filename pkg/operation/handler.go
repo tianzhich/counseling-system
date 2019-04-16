@@ -196,7 +196,7 @@ func AddArticleHandler(w http.ResponseWriter, r *http.Request) {
 
 		// handler
 		var cID = common.GetCounselorIDByUID(uid)
-		var args articleArgs
+		var args common.Article
 		data, _ := ioutil.ReadAll(r.Body)
 		err := json.Unmarshal(data, &args)
 		utils.CheckErr(err)

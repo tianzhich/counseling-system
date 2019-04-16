@@ -65,3 +65,29 @@ func PreCounselorHandler(w http.ResponseWriter, r *http.Request) {
 	resJSON, _ := json.Marshal(res)
 	fmt.Fprintln(w, string(resJSON))
 }
+
+// ArticleDraftHandler 保存为草稿的文章
+func ArticleDraftHandler(w http.ResponseWriter, r *http.Request) {
+	var uid int
+	var userType int
+	if uid, userType = common.IsUserLogin(r); uid == -1 || userType != 1 {
+		http.Error(w, "Authentication failed", http.StatusUnauthorized)
+		return
+	}
+
+	var cID = common.GetCounselorIDByUID(uid)
+	var article *(common.Article)
+	var resp common.Response
+
+	if article = getArticleDraft(cID); article != nil {
+		resp.Code = 1
+		resp.Message = "ok"
+		resp.Data = *(article)
+	} else {
+		resp.Code = 0
+		resp.Message = "无草稿"
+	}
+
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintln(w, string(resJSON))
+}

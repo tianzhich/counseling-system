@@ -269,7 +269,7 @@ func updateCounselorInfo(uID int, info common.CounselorForm) bool {
 }
 
 // 新增文章或保存草稿
-func articleProcess(cID int, args articleArgs) bool {
+func articleProcess(cID int, args common.Article) bool {
 	var dbStr string
 	if args.ID != nil {
 		dbStr = fmt.Sprintf("update article set cover=?, title=?, content=?, is_draft=?, category=?, tags=? where id=%v", *(args.ID))
