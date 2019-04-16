@@ -272,8 +272,8 @@ func updateCounselorInfo(uID int, info common.CounselorForm) bool {
 func articleProcess(cID int, args common.Article) bool {
 	var dbStr string
 	if args.ID != nil {
-		dbStr = fmt.Sprintf("update article set cover=?, title=?, content=?, is_draft=?, category=?, tags=? where id=%v", *(args.ID))
-		if success := utils.UpdateDB(dbStr); success {
+		dbStr = fmt.Sprintf("update article set cover=?, title=?, content=?, excerpt=?, is_draft=?, category=?, tags=? where id=%v", *(args.ID))
+		if success := utils.UpdateDB(dbStr, args.Cover, args.Title, args.Content, args.Excerpt, args.IsDraft, args.Category, args.Tags); success {
 			return true
 		}
 		fmt.Println("更新文章失败")
@@ -281,8 +281,8 @@ func articleProcess(cID int, args common.Article) bool {
 	}
 
 	// 首次提交
-	dbStr = "insert into article set cover=?, title=?, content=?, is_draft=?, category=?, tags=?, c_id=?"
-	if _, success := utils.InsertDB(dbStr); success {
+	dbStr = "insert into article set cover=?, title=?, content=?, excerpt=?, is_draft=?, category=?, tags=?, c_id=?"
+	if _, success := utils.InsertDB(dbStr, args.Cover, args.Title, args.Content, args.Excerpt, args.IsDraft, args.Category, args.Tags, args.CID); success {
 		return true
 	}
 	fmt.Println("插入文章失败")

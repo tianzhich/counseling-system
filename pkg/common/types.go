@@ -124,6 +124,7 @@ type Article struct {
 	ID       *int   `json:"id"`
 	Cover    string `json:"cover"`
 	Title    string `json:"title"`
+	Excerpt  string `json:"excerpt"`
 	Content  string `json:"content"`
 	IsDraft  bool   `json:"isDraft"`
 	Category string `json:"category"`

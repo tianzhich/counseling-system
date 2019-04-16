@@ -218,7 +218,7 @@ func queryCounselingRecordByID(userType int, id int, rID int) *(common.RecordFor
 
 // 查询文章列表，按c_id或category查询，支持分页
 func queryArticleList(args articleQueryArgs, p pagination) articleList {
-	var queryStr = "select id, cover, title, content, category, tags, c_id, update_time from article where is_draft=0"
+	var queryStr = "select id, cover, title, excerpt, content, category, tags, c_id, update_time from article where is_draft=0"
 	var al articleList
 	var total = 0
 	var list []common.Article
@@ -243,7 +243,7 @@ func queryArticleList(args articleQueryArgs, p pagination) articleList {
 	for rows.Next() {
 		total++
 		var a common.Article
-		rows.Scan(&a.ID, &a.Cover, &a.Title, &a.Content, &a.Category, &a.Tags, &a.CID, &a.PostTime)
+		rows.Scan(&a.ID, &a.Cover, &a.Title, &a.Excerpt, &a.Content, &a.Category, &a.Tags, &a.CID, &a.PostTime)
 		list = append(list, a)
 	}
 	rows.Close()
@@ -258,12 +258,12 @@ func queryArticleList(args articleQueryArgs, p pagination) articleList {
 
 // 查询文章，按id查询
 func queryArticle(id int) *(common.Article) {
-	var queryStr = fmt.Sprintf("select id, cover, title, content, category, tags, c_id, update_time from article where is_draft=0 and id=%v", id)
+	var queryStr = fmt.Sprintf("select id, cover, title, excerpt, content, category, tags, c_id, update_time from article where is_draft=0 and id=%v", id)
 	var a common.Article
 
 	rows := utils.QueryDB(queryStr)
 	if rows.Next() {
-		rows.Scan(&a.ID, &a.Cover, &a.Title, &a.Content, &a.Category, &a.Tags, &a.CID, &a.PostTime)
+		rows.Scan(&a.ID, &a.Cover, &a.Title, &a.Excerpt, &a.Content, &a.Category, &a.Tags, &a.CID, &a.PostTime)
 		rows.Close()
 		return &a
 	}
