@@ -121,14 +121,15 @@ type CounselorDetail struct {
 
 // Article 文章信息
 type Article struct {
-	ID       *int   `json:"id"`
-	Cover    string `json:"cover"`
-	Title    string `json:"title"`
-	Excerpt  string `json:"excerpt"`
-	Content  string `json:"content"`
-	IsDraft  int    `json:"isDraft"`
-	Category string `json:"category"`
-	Tags     string `json:"tags"`
-	CID      int    `json:"cID"`
-	PostTime string `json:"postTime"`
+	ID         *int   `json:"id"`
+	Cover      string `json:"cover"`
+	Title      string `json:"title"`
+	Excerpt    string `json:"excerpt"`
+	Content    string `json:"content"`
+	IsDraft    int    `json:"isDraft"`
+	Category   string `json:"category"`
+	Tags       string `json:"tags"`
+	CID        int    `json:"cID"`
+	PostTime   string `json:"postTime"`
+	AuthorName string `json:"authorName"`
 }
