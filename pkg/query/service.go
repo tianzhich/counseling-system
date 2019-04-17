@@ -219,6 +219,7 @@ func queryCounselingRecordByID(userType int, id int, rID int) *(common.RecordFor
 // 查询文章列表，按c_id或category查询，支持分页
 func queryArticleList(args articleQueryArgs, p pagination) articleList {
 	var queryStr = "select id, cover, title, excerpt, content, category, tags, c_id, update_time from article where is_draft=0"
+	var queryCountStr = "select count(*) from article where is_draft=0"
 	var al articleList
 	var total = 0
 	var list []common.Article
@@ -226,9 +227,11 @@ func queryArticleList(args articleQueryArgs, p pagination) articleList {
 	// query args
 	if args.cID != nil {
 		queryStr += fmt.Sprintf(" and c_id=%v", *(args.cID))
+		queryCountStr += fmt.Sprintf(" and c_id=%v", *(args.cID))
 	}
 	if args.category != nil {
 		queryStr += fmt.Sprintf(" and category='%v'", *(args.category))
+		queryCountStr += fmt.Sprintf(" and category='%v'", *(args.category))
 	}
 
 	// orderby
@@ -238,12 +241,15 @@ func queryArticleList(args articleQueryArgs, p pagination) articleList {
 	var firstRecordIndex = (p.PageNum - 1) * p.PageSize
 	queryStr += fmt.Sprintf(" LIMIT %v,%v", firstRecordIndex, p.PageSize)
 
+	// total count
+	total = utils.QueryDBRow(queryCountStr)
+
 	// query
 	rows := utils.QueryDB(queryStr)
 	for rows.Next() {
-		total++
 		var a common.Article
 		rows.Scan(&a.ID, &a.Cover, &a.Title, &a.Excerpt, &a.Content, &a.Category, &a.Tags, &a.CID, &a.PostTime)
+		a.AuthorName = common.GetCounselorNameByCID(a.CID)
 		list = append(list, a)
 	}
 	rows.Close()
@@ -265,6 +271,7 @@ func queryArticle(id int) *(common.Article) {
 	if rows.Next() {
 		rows.Scan(&a.ID, &a.Cover, &a.Title, &a.Excerpt, &a.Content, &a.Category, &a.Tags, &a.CID, &a.PostTime)
 		rows.Close()
+		a.AuthorName = common.GetCounselorNameByCID(a.CID)
 		return &a
 	}
 	rows.Close()
