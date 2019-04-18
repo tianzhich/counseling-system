@@ -288,3 +288,16 @@ func articleProcess(cID int, args common.Article) bool {
 	fmt.Println("插入文章失败")
 	return false
 }
+
+// 新增文章留言
+func addArticleComment(uID int, cmt common.ArticleComment) (bool, int) {
+	var insertStr = "insert into article_comment set text=?, a_id=?, ref=?, author=?"
+	var id int64
+	var success bool
+
+	if id, success = utils.InsertDB(insertStr, cmt.Text, cmt.AID, cmt.RefID, cmt.AuthorID); !success {
+		fmt.Println("新增文章留言失败")
+		return false, -1
+	}
+	return true, int(id)
+}

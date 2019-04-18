@@ -121,15 +121,28 @@ type CounselorDetail struct {
 
 // Article 文章信息
 type Article struct {
-	ID         *int   `json:"id"`
-	Cover      string `json:"cover"`
-	Title      string `json:"title"`
-	Excerpt    string `json:"excerpt"`
-	Content    string `json:"content"`
-	IsDraft    int    `json:"isDraft"`
-	Category   string `json:"category"`
-	Tags       string `json:"tags"`
-	CID        int    `json:"cID"`
-	PostTime   string `json:"postTime"`
-	AuthorName string `json:"authorName"`
+	ID         *int             `json:"id"`
+	Cover      string           `json:"cover"`
+	Title      string           `json:"title"`
+	Excerpt    string           `json:"excerpt"`
+	Content    string           `json:"content"`
+	IsDraft    int              `json:"isDraft"`
+	Category   string           `json:"category"`
+	Tags       string           `json:"tags"`
+	CID        int              `json:"cID"`
+	PostTime   string           `json:"postTime"`
+	AuthorName string           `json:"authorName"`
+	Comment    []ArticleComment `json:"comment"`
+}
+
+// ArticleComment 文章评论
+type ArticleComment struct {
+	ID         int             `json:"id"`
+	Text       string          `json:"text"`
+	AID        int             `json:"aID"`
+	PostTime   string          `json:"postTime"`
+	RefID      *int            `json:"refID"`
+	Ref        *ArticleComment `json:"ref"`
+	AuthorID   int             `json:"authorID"`
+	AuthorName string          `json:"authorName"`
 }

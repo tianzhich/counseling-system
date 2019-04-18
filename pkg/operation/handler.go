@@ -216,3 +216,34 @@ func AddArticleHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 }
+
+// AddArticleCommentHandler 添加文章评论
+func AddArticleCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		var uid int
+		if uid, _ = common.IsUserLogin(r); uid == -1 {
+			http.Error(w, "Authentication failed", http.StatusUnauthorized)
+			return
+		}
+
+		var args common.ArticleComment
+		body, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(body, &args)
+		utils.CheckErr(err)
+
+		var resp common.Response
+		if success, aID := addArticleComment(uid, args); success {
+			resp.Code = 1
+			resp.Message = "ok"
+			resp.Data = aID
+		} else {
+			resp.Code = 0
+			resp.Message = "新增留言失败"
+		}
+
+		resJSON, _ := json.Marshal(resp)
+		fmt.Fprintln(w, string(resJSON))
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+}

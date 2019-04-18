@@ -262,6 +262,46 @@ func queryArticleList(args articleQueryArgs, p pagination) articleList {
 	return al
 }
 
+// 查询文章留言
+func queryArticleComment(aid int) []common.ArticleComment {
+	var queryStr = fmt.Sprintf("select id, text, create_time, author, ref from article_comment where a_id=%v", aid)
+	var cmts []common.ArticleComment
+
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var cmt common.ArticleComment
+		var ref *int
+		rows.Scan(&cmt.ID, &cmt.Text, &cmt.PostTime, &cmt.AuthorID, ref)
+		// handle ref
+		if ref == nil {
+			cmt.Ref = nil
+		} else {
+			cmt.Ref = queryArticleCommentRefByID(*(ref))
+		}
+		// handle authorName
+		cmt.AuthorName = common.GetUserNameByID(cmt.AuthorID)
+
+		cmts = append(cmts, cmt)
+	}
+	rows.Close()
+	return cmts
+}
+
+// 查询文章留言，按ID查询
+func queryArticleCommentRefByID(id int) *(common.ArticleComment) {
+	var queryStr = fmt.Sprintf("select id, text, create_time, author from article_comment where id=%v", id)
+	var cmt common.ArticleComment
+
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Scan(&cmt.ID, &cmt.Text, &cmt.PostTime, cmt.AuthorID)
+		rows.Close()
+		return &cmt
+	}
+	rows.Close()
+	return nil
+}
+
 // 查询文章，按id查询
 func queryArticle(id int) *(common.Article) {
 	var queryStr = fmt.Sprintf("select id, cover, title, excerpt, content, category, tags, c_id, update_time from article where is_draft=0 and id=%v", id)
@@ -272,6 +312,8 @@ func queryArticle(id int) *(common.Article) {
 		rows.Scan(&a.ID, &a.Cover, &a.Title, &a.Excerpt, &a.Content, &a.Category, &a.Tags, &a.CID, &a.PostTime)
 		rows.Close()
 		a.AuthorName = common.GetCounselorNameByCID(a.CID)
+		// handle comment
+		a.Comment = queryArticleComment(*(a.ID))
 		return &a
 	}
 	rows.Close()
