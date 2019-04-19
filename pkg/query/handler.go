@@ -238,6 +238,9 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 		resp.Code = 0
 		resp.Message = "未知文章ID"
 	}
+
+	w.Header().Set("x-text-x", "test")
+
 	// result
 	resJSON, _ := json.Marshal(resp)
 	fmt.Fprintln(w, string(resJSON))

@@ -48,6 +48,8 @@ func SigninHandler(w http.ResponseWriter, r *http.Request) {
 		// init user session
 		if result.Code == 1 {
 			utils.InitUserSession(w, r, uid)
+			// cookie := http.Cookie{Name: "x-token", Value: string(uid)}
+			// http.SetCookie(w, &cookie)
 		}
 
 		resJSON, _ := json.Marshal(result)
