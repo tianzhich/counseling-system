@@ -249,7 +249,12 @@ func queryArticleList(args articleQueryArgs, p pagination) articleList {
 	for rows.Next() {
 		var a common.Article
 		rows.Scan(&a.ID, &a.Cover, &a.Title, &a.Excerpt, &a.Content, &a.Category, &a.Tags, &a.CID, &a.PostTime)
+		// handle authorName
 		a.AuthorName = common.GetCounselorNameByCID(a.CID)
+		// handle readCount
+		a.ReadCount = common.GetCountByID(*(a.ID), "read", "article")
+		// handle like count
+		a.LikeCount = common.GetCountByID(*(a.ID), "like", "article")
 		list = append(list, a)
 	}
 	rows.Close()
@@ -263,7 +268,7 @@ func queryArticleList(args articleQueryArgs, p pagination) articleList {
 }
 
 // 查询文章留言
-func queryArticleComment(aid int) []common.ArticleComment {
+func queryArticleComment(aid int, uID int) []common.ArticleComment {
 	var queryStr = fmt.Sprintf("select id, text, create_time, author, ref from article_comment where a_id=%v", aid)
 	var cmts []common.ArticleComment
 
@@ -280,6 +285,15 @@ func queryArticleComment(aid int) []common.ArticleComment {
 		}
 		// handle authorName
 		cmt.AuthorName = common.GetUserNameByID(cmt.AuthorID)
+		// handle isLike
+		if uID != -1 {
+			isLike := common.CheckReadStarLike(uID, cmt.ID, "like", "article_comment")
+			cmt.IsLike = &isLike
+		} else {
+			cmt.IsLike = nil
+		}
+		// handle like count
+		cmt.LikeCount = common.GetCountByID(cmt.ID, "like", "article_comment")
 
 		cmts = append(cmts, cmt)
 	}
@@ -303,7 +317,7 @@ func queryArticleCommentRefByID(id int) *(common.ArticleComment) {
 }
 
 // 查询文章，按id查询
-func queryArticle(id int) *(common.Article) {
+func queryArticle(id int, uID int) *(common.Article) {
 	var queryStr = fmt.Sprintf("select id, cover, title, excerpt, content, category, tags, c_id, update_time from article where is_draft=0 and id=%v", id)
 	var a common.Article
 
@@ -313,7 +327,24 @@ func queryArticle(id int) *(common.Article) {
 		rows.Close()
 		a.AuthorName = common.GetCounselorNameByCID(a.CID)
 		// handle comment
-		a.Comment = queryArticleComment(*(a.ID))
+		a.Comment = queryArticleComment(*(a.ID), uID)
+		// handle isRead, isStar isLike
+		if uID != -1 {
+			isRead := common.CheckReadStarLike(uID, *(a.ID), "read", "article")
+			isLike := common.CheckReadStarLike(uID, *(a.ID), "like", "article")
+			isStar := common.CheckReadStarLike(uID, *(a.ID), "star", "article")
+			a.IsRead = &isRead
+			a.IsLike = &isLike
+			a.IsStar = &isStar
+		} else {
+			a.IsRead = nil
+			a.IsLike = nil
+			a.IsStar = nil
+		}
+		// handle readCount
+		a.ReadCount = common.GetCountByID(*(a.ID), "read", "article")
+		// handle like count
+		a.LikeCount = common.GetCountByID(*(a.ID), "like", "article")
 		return &a
 	}
 	rows.Close()

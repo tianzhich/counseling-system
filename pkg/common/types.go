@@ -133,6 +133,12 @@ type Article struct {
 	PostTime   string           `json:"postTime"`
 	AuthorName string           `json:"authorName"`
 	Comment    []ArticleComment `json:"comment"`
+	IsRead     *bool            `json:"isRead"`
+	IsStar     *bool            `json:"isStar"`
+	IsLike     *bool            `json:"isLike"`
+	ReadCount  int              `json:"readCount"`
+	StarCount  int              `json:"starCount"`
+	LikeCount  int              `json:"likeCount"`
 }
 
 // ArticleComment 文章评论
@@ -145,4 +151,6 @@ type ArticleComment struct {
 	Ref        *ArticleComment `json:"ref"`
 	AuthorID   int             `json:"authorID"`
 	AuthorName string          `json:"authorName"`
+	IsLike     *bool           `json:"isLike"`
+	LikeCount  int             `json:"likeCount"`
 }

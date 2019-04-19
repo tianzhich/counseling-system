@@ -247,3 +247,66 @@ func AddArticleCommentHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 }
+
+// UpdateStarLikeHandler 更新收藏、评论、点赞
+func UpdateStarLikeHandler(w http.ResponseWriter, r *http.Request) {
+	var uid int
+	if uid, _ = common.IsUserLogin(r); uid == -1 {
+		http.Error(w, "Authentication failed", http.StatusUnauthorized)
+		return
+	}
+
+	// validate
+	refID, _ := strconv.Atoi(r.URL.Query().Get("refID"))
+	type1 := r.URL.Query().Get("type1")
+	type2 := r.URL.Query().Get("type2")
+	if refID <= 0 || (type1 != "star" && type1 != "like") || (type2 != "article" && type2 != "article_comment") {
+		http.Error(w, "status forbidden", http.StatusForbidden)
+		return
+	}
+	if type1 == "star" && type2 == "article_comment" {
+		http.Error(w, "status forbidden", http.StatusForbidden)
+		return
+	}
+
+	// handle
+	var resp common.Response
+	if success := toggleStarLike(uid, refID, type1, type2); success {
+		resp.Code = 1
+		resp.Message = "ok"
+	} else {
+		resp.Code = 0
+		resp.Message = "服务内部错误"
+	}
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintln(w, string(resJSON))
+}
+
+// ReadCountHandler 统计阅读量
+func ReadCountHandler(w http.ResponseWriter, r *http.Request) {
+	var uid int
+	if uid, _ = common.IsUserLogin(r); uid == -1 {
+		http.Error(w, "Authentication failed", http.StatusUnauthorized)
+		return
+	}
+
+	// validate
+	refID, _ := strconv.Atoi(r.URL.Query().Get("refID"))
+	ttype := r.URL.Query().Get("type")
+	if refID <= 0 || (ttype != "article") {
+		http.Error(w, "status forbidden", http.StatusForbidden)
+		return
+	}
+
+	// handle
+	var resp common.Response
+	if success := markReadCounter(uid, refID, ttype); success {
+		resp.Code = 1
+		resp.Message = "ok"
+	} else {
+		resp.Code = 0
+		resp.Message = "服务内部错误"
+	}
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintln(w, string(resJSON))
+}

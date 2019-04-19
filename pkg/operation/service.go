@@ -301,3 +301,86 @@ func addArticleComment(uID int, cmt common.ArticleComment) (bool, int) {
 	}
 	return true, int(id)
 }
+
+// 添加或取消收藏、点赞
+func toggleStarLike(uID int, refID int, type1 string, type2 string) bool {
+	// validate
+	if validate := validateRefByType(refID, type2); !validate {
+		return false
+	}
+
+	var queryStr = fmt.Sprintf("select id, is_cancel from star_like where u_id=%v and ref_id=%v and type1='%v'and type2='%v'", uID, refID, type1, type2)
+	queryRows := utils.QueryDB(queryStr)
+	if queryRows.Next() {
+		// toggle is_cancel is ok
+		var iid int
+		var isCancel int
+		queryRows.Scan(&iid, &isCancel)
+		var updateStr = fmt.Sprintf("update star_like set is_cancel=? where id=%v", iid)
+		var iisCancel int
+		if isCancel == 0 {
+			iisCancel = 1
+		} else {
+			iisCancel = 0
+		}
+		queryRows.Close()
+		if success := utils.UpdateDB(updateStr, iisCancel); !success {
+			fmt.Println("更新收藏点赞失败")
+			return false
+		}
+		return true
+	}
+
+	// insert
+	var insertStr = "insert into star_like set u_id=?, ref_id=?, type1=?, type2=?"
+	if _, success := utils.InsertDB(insertStr, uID, refID, type1, type2); !success {
+		fmt.Println("更新收藏点赞失败")
+		return false
+	}
+	return true
+}
+
+// 新增阅读量(文章或帖子)
+func markReadCounter(uID int, refID int, ttype string) bool {
+	// validate
+	if validate := validateRefByType(refID, ttype); !validate {
+		return false
+	}
+
+	if isRead := common.CheckReadStarLike(uID, refID, "read", ttype); isRead {
+		return true
+	}
+
+	// insert
+	var insertStr = "insert into read_count set u_id=?, ref_id=?, type=?"
+	if _, success := utils.InsertDB(insertStr, uID, refID, ttype); !success {
+		fmt.Println("新增阅读量失败")
+		return false
+	}
+	return true
+}
+
+// 校验文章，评论，帖子等是否存在
+func validateRefByType(refID int, t string) bool {
+	var dbTable string
+	switch t {
+	case "article":
+		dbTable = "article"
+	case "article_comment":
+		dbTable = "article_comment"
+	default:
+		dbTable = ""
+	}
+	if dbTable == "" {
+		return false
+	}
+
+	var queryStr = fmt.Sprintf("select * from %v where id=%v", dbTable, refID)
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Close()
+		return true
+	}
+	rows.Close()
+	return false
+}

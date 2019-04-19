@@ -173,3 +173,50 @@ func HandleApplyCity(city string, uid int) {
 		fmt.Println("更新咨询师所在城市出错")
 	}
 }
+
+// CheckReadStarLike 检查状态(已读，已收藏，已点赞，已关注), t1: read & like & star & follow; t2: article & article_comment
+func CheckReadStarLike(uID int, refID int, t1 string, t2 string) bool {
+	var queryStr = "select * from "
+	switch t1 {
+	case "read":
+		queryStr += fmt.Sprintf("read_count where u_id=%v and ref_id=%v and type='%v'", uID, refID, t2)
+	case "like":
+		queryStr += fmt.Sprintf("star_like where u_id=%v and ref_id=%v and type1='like' and type2='%v' and is_cancel=0", uID, refID, t2)
+	case "star":
+		queryStr += fmt.Sprintf("star_like where u_id=%v and ref_id=%v and type1='star' and type2='%v' and is_cancel=0", uID, refID, t2)
+	default:
+		queryStr = ""
+	}
+
+	if queryStr == "" {
+		return false
+	}
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Close()
+		return true
+	}
+	rows.Close()
+	return false
+}
+
+// GetCountByID 获得数量(阅读，点赞，收藏，关注), t1: read & like & star & follow; t2: article & article_comment
+func GetCountByID(id int, t1 string, t2 string) int {
+	var queryCountStr = "select count(*) from "
+	switch t1 {
+	case "read":
+		queryCountStr += fmt.Sprintf("read_count where ref_id=%v and type='%v'", id, t2)
+	case "like":
+		queryCountStr += fmt.Sprintf("star_like where ref_id=%v and type1='like' and type2='%v' and is_cancel=0", id, t2)
+	case "star":
+		queryCountStr += fmt.Sprintf("star_like where ref_id=%v and type1='star' and type2='%v' and is_cancel=0", id, t2)
+	default:
+		queryCountStr = ""
+	}
+	if queryCountStr == "" {
+		return 0
+	}
+
+	var count = utils.QueryDBRow(queryCountStr)
+	return count
+}
