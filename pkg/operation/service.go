@@ -188,7 +188,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 			} else if operation == 0 {
 				if args.CancelReason1 != nil {
 					updateStr += fmt.Sprintf(", cancel_reason1=? where id=%v", recordID)
-					utils.UpdateDB(updateStr, "wait_comment", args.CancelReason1)
+					utils.UpdateDB(updateStr, "cancel", args.CancelReason1)
 				} else {
 					return 0, "取消理由不能为空" // 此时取消不退款
 				}
