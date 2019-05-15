@@ -13,3 +13,9 @@ type filter struct {
 type preInfo struct {
 	common.User
 }
+
+type askTag struct {
+	ID      string    `json:"id"`
+	Name    string    `json:"name"`
+	SubTags *[]askTag `json:"subTags"`
+}

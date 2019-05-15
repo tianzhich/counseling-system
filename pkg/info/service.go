@@ -4,6 +4,7 @@ import (
 	"counseling-system/pkg/common"
 	"counseling-system/pkg/utils"
 	"fmt"
+	"strconv"
 )
 
 func getLogginUserInfo(uid int) preInfo {
@@ -56,4 +57,34 @@ func getArticleDraft(cID int) *(common.Article) {
 	}
 	rows.Close()
 	return nil
+}
+
+func getAskTags() []askTag {
+	var queryTagParentStr = "select parent_id, parent_name from ask_tag GROUP BY `parent_id`"
+	var queryTagStr string
+	var at []askTag
+
+	rows1 := utils.QueryDB(queryTagParentStr)
+	for rows1.Next() {
+		var att askTag
+		rows1.Scan(&att.ID, &att.Name)
+		at = append(at, att)
+	}
+	rows1.Close()
+
+	for index, p := range at {
+		queryTagStr = fmt.Sprintf("select id, name from ask_tag where parent_id='%v'", p.ID)
+		rows2 := utils.QueryDB(queryTagStr)
+		var subAt []askTag
+		for rows2.Next() {
+			var subAtt askTag
+			var id int
+			rows2.Scan(&id, &subAtt.Name)
+			subAtt.ID = strconv.Itoa(id)
+			subAt = append(subAt, subAtt)
+		}
+		rows2.Close()
+		at[index].SubTags = &subAt
+	}
+	return at
 }

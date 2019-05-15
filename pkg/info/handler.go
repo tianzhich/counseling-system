@@ -91,3 +91,14 @@ func ArticleDraftHandler(w http.ResponseWriter, r *http.Request) {
 	resJSON, _ := json.Marshal(resp)
 	fmt.Fprintln(w, string(resJSON))
 }
+
+// AskTagsHandler 获取问答标签
+func AskTagsHandler(w http.ResponseWriter, r *http.Request) {
+	var resp common.Response
+	resp.Code = 1
+	resp.Message = "ok"
+	resp.Data = getAskTags()
+
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintln(w, string(resJSON))
+}
