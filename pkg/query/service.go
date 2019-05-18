@@ -4,8 +4,19 @@ import (
 	"counseling-system/pkg/common"
 	"counseling-system/pkg/utils"
 	"fmt"
+	"sort"
 	"strings"
 )
+
+func (al askList) Len() int {
+	return len(al)
+}
+func (al askList) Less(i, j int) bool {
+	return al[i].AnswerCount+al[i].StarCount > al[j].AnswerCount+al[j].StarCount
+}
+func (al askList) Swap(i, j int) {
+	al[i], al[j] = al[j], al[i]
+}
 
 // 咨询师列表
 func queryCounselors(p pagination, option *filterOption, orderBy string, like string) (pagination, []common.Counselor) {
@@ -349,4 +360,61 @@ func queryArticle(id int, uID int) *(common.Article) {
 	}
 	rows.Close()
 	return nil
+}
+
+// 查询问答列表（是否精选，是否按最近回答优先）
+func queryAskList(featured bool, answer bool) askList {
+	var queryStr string
+	var al askList
+
+	// 最近回答优先
+	if answer == true {
+		queryCmtStr := "select id, text, author, create_time, ask_id from ask_comment where reply_to=0"
+		cmtRows := utils.QueryDB(queryCmtStr)
+		for cmtRows.Next() {
+			var a common.AskItem
+			var askID int
+			var ac common.AskComment
+			cmtRows.Scan(&ac.ID, &ac.Text, &ac.AuthorID, &ac.Time, &askID)
+			// 回答者姓名
+			ac.AuthorName = common.GetUserNameByID(ac.AuthorID)
+			a.RecentComment = ac
+			a.ID = askID
+
+			// ask item
+			queryStr = fmt.Sprintf("select title, content, is_anonymous, create_time from ask where id=%v", askID)
+			rows := utils.QueryDB(queryStr)
+			if rows.Next() {
+				rows.Scan(&a.Title, &a.Content, &a.IsAnony, &a.Time)
+				// 回答数
+				var queryAnswerCountStr = fmt.Sprintf("select count(*) from ask_comment ask_id=%v", askID)
+				a.AnswerCount = utils.QueryDBRow(queryAnswerCountStr)
+				a.StarCount = common.GetCountByID(askID, "star", "ask")
+			}
+			rows.Close()
+			al = append(al, a)
+		}
+		cmtRows.Close()
+	} else {
+		queryStr = "select id, title, content, is_anonymous, create_time from ask"
+		rows := utils.QueryDB(queryStr)
+		for rows.Next() {
+			var a common.AskItem
+			rows.Scan(&a.ID, &a.Title, &a.Content, &a.IsAnony, &a.Time)
+			// 回答数
+			var askID = a.ID
+			var queryAnswerCountStr = fmt.Sprintf("select count(*) from ask_comment where ask_id=%v", askID)
+			a.AnswerCount = utils.QueryDBRow(queryAnswerCountStr)
+			a.StarCount = common.GetCountByID(askID, "star", "ask")
+			al = append(al, a)
+		}
+		rows.Close()
+	}
+
+	// 是否精选
+	if !answer && featured {
+		sort.Sort(al)
+	}
+
+	return al
 }

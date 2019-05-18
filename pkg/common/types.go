@@ -154,3 +154,39 @@ type ArticleComment struct {
 	IsLike     *bool           `json:"isLike"`
 	LikeCount  int             `json:"likeCount"`
 }
+
+// AskTag 问答标签
+type AskTag struct {
+	ID      string    `json:"id"`
+	Name    string    `json:"name"`
+	SubTags *[]AskTag `json:"subTags"`
+}
+
+// AskComment 问答下评论
+type AskComment struct {
+	ID          int          `json:"id"`
+	Text        string       `json:"text"`
+	AuthorID    int          `json:"authorId"`
+	AuthorName  string       `json:"authorName"`
+	ReplyTo     *string      `json:"replyTo"`
+	SubComments []AskComment `json:"subComments"`
+	Time        string       `json:"time"`
+}
+
+// AskItem 问答项
+type AskItem struct {
+	ID            int          `json:"id"`
+	Title         string       `json:"title"`
+	Content       string       `json:"content"`
+	Time          string       `json:"time"`
+	IsAnony       bool         `json:"isAnony"`
+	AuthorName    string       `json:"authorName"`
+	AuthorID      int          `json:"authorId"`
+	AnswerCount   int          `json:"answerCount"`
+	StarCount     int          `json:"starCount"`
+	LikeCount     int          `json:"likeCount"`
+	ReadCount     int          `json:"readCount"`
+	Tags          []AskTag     `json:"tags"`
+	RecentComment AskComment   `json:"recentComment"`
+	Comment       []AskComment `json:"askCommentÏ"`
+}

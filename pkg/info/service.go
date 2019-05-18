@@ -59,14 +59,14 @@ func getArticleDraft(cID int) *(common.Article) {
 	return nil
 }
 
-func getAskTags() []askTag {
+func getAskTags() []common.AskTag {
 	var queryTagParentStr = "select parent_id, parent_name from ask_tag GROUP BY `parent_id`"
 	var queryTagStr string
-	var at []askTag
+	var at []common.AskTag
 
 	rows1 := utils.QueryDB(queryTagParentStr)
 	for rows1.Next() {
-		var att askTag
+		var att common.AskTag
 		rows1.Scan(&att.ID, &att.Name)
 		at = append(at, att)
 	}
@@ -75,9 +75,9 @@ func getAskTags() []askTag {
 	for index, p := range at {
 		queryTagStr = fmt.Sprintf("select id, name from ask_tag where parent_id='%v'", p.ID)
 		rows2 := utils.QueryDB(queryTagStr)
-		var subAt []askTag
+		var subAt []common.AskTag
 		for rows2.Next() {
-			var subAtt askTag
+			var subAtt common.AskTag
 			var id int
 			rows2.Scan(&id, &subAtt.Name)
 			subAtt.ID = strconv.Itoa(id)

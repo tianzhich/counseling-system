@@ -33,3 +33,5 @@ type articleQueryArgs struct {
 	category *string
 	cID      *int
 }
+
+type askList []common.AskItem

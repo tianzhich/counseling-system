@@ -174,7 +174,7 @@ func HandleApplyCity(city string, uid int) {
 	}
 }
 
-// CheckReadStarLike 检查状态(已读，已收藏，已点赞，已关注), t1: read & like & star & follow; t2: article & article_comment
+// CheckReadStarLike 检查状态(已读，已收藏，已点赞，已关注), t1: read & like & star & follow; t2: article & article_comment & ask
 func CheckReadStarLike(uID int, refID int, t1 string, t2 string) bool {
 	var queryStr = "select * from "
 	switch t1 {
@@ -200,7 +200,7 @@ func CheckReadStarLike(uID int, refID int, t1 string, t2 string) bool {
 	return false
 }
 
-// GetCountByID 获得数量(阅读，点赞，收藏，关注), t1: read & like & star & follow; t2: article & article_comment
+// GetCountByID 获得数量(阅读，点赞，收藏，关注), t1: read & like & star & follow; t2: article & article_comment & ask
 func GetCountByID(id int, t1 string, t2 string) int {
 	var queryCountStr = "select count(*) from "
 	switch t1 {

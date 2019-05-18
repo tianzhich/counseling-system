@@ -246,3 +246,28 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, string(resJSON))
 	return
 }
+
+// AskHandler 查询问答帖子
+func AskHandler(w http.ResponseWriter, r *http.Request) {
+	isAnswerStr := r.URL.Query().Get("isAnswer")
+	featuredStr := r.URL.Query().Get("featured")
+	var isAnswer, featured bool
+	if isAnswerStr == "true" {
+		isAnswer = true
+	} else {
+		isAnswer = false
+	}
+	if featuredStr == "true" {
+		featured = true
+	} else {
+		featured = false
+	}
+
+	var resp common.Response
+	resp.Code = 1
+	resp.Message = "ok"
+	resp.Data = queryAskList(featured, isAnswer)
+	resJSON, _ := json.Marshal(resp)
+
+	fmt.Fprintln(w, string(resJSON))
+}

@@ -360,7 +360,7 @@ func markReadCounter(uID int, refID int, ttype string) bool {
 	return true
 }
 
-// 校验文章，评论，帖子等是否存在
+// 校验文章，评论，问答帖子等是否存在
 func validateRefByType(refID int, t string) bool {
 	var dbTable string
 	switch t {
@@ -368,6 +368,8 @@ func validateRefByType(refID int, t string) bool {
 		dbTable = "article"
 	case "article_comment":
 		dbTable = "article_comment"
+	case "ask":
+		dbTable = "ask"
 	default:
 		dbTable = ""
 	}
