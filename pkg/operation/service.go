@@ -384,3 +384,13 @@ func validateRefByType(refID int, t string) bool {
 	rows.Close()
 	return false
 }
+
+// 新增问答帖子
+func addAsk(uID int, f askForm) bool {
+	var insertStr = "insert into ask set title=?, content=?, is_anonymous=?, tags=?, user_id=?"
+	if _, success := utils.InsertDB(insertStr, f.Title, f.Content, f.IsAnony, f.Tags, uID); !success {
+		fmt.Println("新增问答帖子，数据库操作失败")
+		return false
+	}
+	return true
+}

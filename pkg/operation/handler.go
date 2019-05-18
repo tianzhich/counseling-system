@@ -310,3 +310,34 @@ func ReadCountHandler(w http.ResponseWriter, r *http.Request) {
 	resJSON, _ := json.Marshal(resp)
 	fmt.Fprintln(w, string(resJSON))
 }
+
+// AddAskHandler 增加问答帖子
+func AddAskHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		// 登录验证
+		var uid int
+		if uid, _ = common.IsUserLogin(r); uid == -1 {
+			http.Error(w, "Authentication failed", http.StatusUnauthorized)
+			return
+		}
+
+		var resp common.Response
+		res, _ := ioutil.ReadAll(r.Body)
+
+		var formData askForm
+		err := json.Unmarshal(res, &formData)
+		utils.CheckErr(err)
+
+		if success := addAsk(uid, formData); success {
+			resp.Code = 1
+			resp.Message = "ok"
+		} else {
+			resp.Code = 0
+			resp.Message = "新增失败"
+		}
+		resJSON, _ := json.Marshal(resp)
+		fmt.Fprintln(w, string(resJSON))
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+}

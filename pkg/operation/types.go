@@ -10,3 +10,11 @@ type processArgs struct {
 	RatingText    *string `json:"ratingText"`
 	Letter        *string `json:"letter"`
 }
+
+// 新增问答Form
+type askForm struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	IsAnony bool   `json:"isAnony"`
+	Tags    string `json:"tags"`
+}

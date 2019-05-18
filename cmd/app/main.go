@@ -63,4 +63,5 @@ func operationHandlers(mux *(mux.Router)) {
 	mux.HandleFunc("/api/operation/articleComment", operation.AddArticleCommentHandler)
 	mux.HandleFunc("/api/operation/starLike", operation.UpdateStarLikeHandler)
 	mux.HandleFunc("/api/operation/countRead", operation.ReadCountHandler)
+	mux.HandleFunc("/api/operation/addAsk", operation.AddAskHandler)
 }
