@@ -396,3 +396,23 @@ func addAsk(uID int, f askForm) bool {
 	}
 	return true
 }
+
+// 新增问答评论
+func addAskComment(uID int, f askCmtForm) (bool, int) {
+	var insertStr = "insert into ask_comment set text=?, author=?, reply_to=?, ask_id=?"
+	var addCmtID int64
+	var success bool
+	if f.Ref != nil {
+		insertStr += ", ref=?"
+		if addCmtID, success = utils.InsertDB(insertStr, f.Text, f.Author, f.ReplyTo, f.AskID, f.Ref); !success {
+			fmt.Println("新增问答评论出错")
+			return false, -1
+		}
+	} else {
+		if addCmtID, success = utils.InsertDB(insertStr, f.Text, f.Author, 0, f.AskID); !success {
+			fmt.Println("新增问答评论出错")
+			return false, -1
+		}
+	}
+	return true, int(addCmtID)
+}

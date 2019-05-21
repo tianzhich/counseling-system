@@ -186,7 +186,10 @@ type AskItem struct {
 	StarCount     int          `json:"starCount"`
 	LikeCount     int          `json:"likeCount"`
 	ReadCount     int          `json:"readCount"`
+	IsRead        *bool        `json:"isRead"`
+	IsStar        *bool        `json:"isStar"`
+	IsLike        *bool        `json:"isLike"`
 	Tags          []AskTag     `json:"tags"`
-	RecentComment AskComment   `json:"recentComment"`
-	Comment       []AskComment `json:"askCommentÏ"`
+	RecentComment *AskComment  `json:"recentComment"`
+	Comment       []AskComment `json:"askComment"`
 }

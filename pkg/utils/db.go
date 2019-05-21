@@ -7,7 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql" // mysql driver
 )
 
-const dataSourceName = "tianzhi:tianzhi@tcp(47.94.223.143:3306)/pcs"
+const dataSourceName = "root:12345678@tcp(localhost:3306)/pcs"
 
 func initialDb() *sql.DB {
 	mydbcon := dataSourceName

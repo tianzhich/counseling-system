@@ -220,3 +220,20 @@ func GetCountByID(id int, t1 string, t2 string) int {
 	var count = utils.QueryDBRow(queryCountStr)
 	return count
 }
+
+// GetTagByID 获得Tag
+func GetTagByID(id int) *AskTag {
+	var at AskTag
+	var queryStr = fmt.Sprintf("select name, parent_id, parent_name from ask_tag where id=%v", id)
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		var subTag AskTag
+		subTag.ID = string(id)
+		rows.Scan(&subTag.Name, &at.ID, &at.Name)
+		at.SubTags = &([]AskTag{subTag})
+		rows.Close()
+		return &at
+	}
+	rows.Close()
+	return nil
+}

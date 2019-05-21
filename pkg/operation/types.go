@@ -18,3 +18,12 @@ type askForm struct {
 	IsAnony bool   `json:"isAnony"`
 	Tags    string `json:"tags"`
 }
+
+// 新增问答评论Form
+type askCmtForm struct {
+	Text    string `json:"text"`
+	Author  int    `json:"author"`
+	ReplyTo *int   `json:"replyTo"`
+	Ref     *int   `json:"ref"`
+	AskID   int    `json:"askID"`
+}

@@ -60,7 +60,7 @@ func getArticleDraft(cID int) *(common.Article) {
 }
 
 func getAskTags() []common.AskTag {
-	var queryTagParentStr = "select parent_id, parent_name from ask_tag GROUP BY `parent_id`"
+	var queryTagParentStr = "select parent_id, ANY_VALUE(parent_name) from ask_tag GROUP BY `parent_id`"
 	var queryTagStr string
 	var at []common.AskTag
 

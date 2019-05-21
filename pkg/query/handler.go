@@ -271,3 +271,26 @@ func AskHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintln(w, string(resJSON))
 }
+
+// AskItemHandler 查询问答项
+func AskItemHandler(w http.ResponseWriter, r *http.Request) {
+	askID, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	var resp common.Response
+	if askID > 0 {
+		uid, _ := common.IsUserLogin(r)
+		if askItem := queryAskItem(askID, uid); askItem != nil {
+			resp.Code = 1
+			resp.Message = "ok"
+			resp.Data = &askItem
+		} else {
+			resp.Code = 0
+			resp.Message = "未找到数据"
+		}
+	} else {
+		resp.Code = 0
+		resp.Message = "非法查询ID"
+	}
+
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintln(w, string(resJSON))
+}

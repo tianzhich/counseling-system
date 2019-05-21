@@ -5,6 +5,7 @@ import (
 	"counseling-system/pkg/utils"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -362,6 +363,28 @@ func queryArticle(id int, uID int) *(common.Article) {
 	return nil
 }
 
+// 查询文章标签
+func queryAskTagsByAskID(id int) []common.AskTag {
+	var tagIDStrs string
+	var tags []common.AskTag
+	var queryStr = fmt.Sprintf("select tags from ask where id=%v", id)
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Scan(&tagIDStrs)
+		tagIDArr := strings.Split(tagIDStrs, ",")
+
+		for _, v := range tagIDArr {
+			var tag common.AskTag
+			tagID, _ := strconv.Atoi(v)
+			tag = *(common.GetTagByID(tagID))
+			tags = append(tags, tag)
+		}
+	}
+
+	rows.Close()
+	return tags
+}
+
 // 查询问答列表（是否精选，是否按最近回答优先）
 func queryAskList(featured bool, answer bool) askList {
 	var queryStr string
@@ -378,8 +401,11 @@ func queryAskList(featured bool, answer bool) askList {
 			cmtRows.Scan(&ac.ID, &ac.Text, &ac.AuthorID, &ac.Time, &askID)
 			// 回答者姓名
 			ac.AuthorName = common.GetUserNameByID(ac.AuthorID)
-			a.RecentComment = ac
+			a.RecentComment = &ac
 			a.ID = askID
+
+			// tags
+			a.Tags = queryAskTagsByAskID(askID)
 
 			// ask item
 			queryStr = fmt.Sprintf("select title, content, is_anonymous, create_time from ask where id=%v", askID)
@@ -387,7 +413,7 @@ func queryAskList(featured bool, answer bool) askList {
 			if rows.Next() {
 				rows.Scan(&a.Title, &a.Content, &a.IsAnony, &a.Time)
 				// 回答数
-				var queryAnswerCountStr = fmt.Sprintf("select count(*) from ask_comment ask_id=%v", askID)
+				var queryAnswerCountStr = fmt.Sprintf("select count(*) from ask_comment where ask_id=%v and reply_to=0", askID)
 				a.AnswerCount = utils.QueryDBRow(queryAnswerCountStr)
 				a.StarCount = common.GetCountByID(askID, "star", "ask")
 			}
@@ -401,9 +427,11 @@ func queryAskList(featured bool, answer bool) askList {
 		for rows.Next() {
 			var a common.AskItem
 			rows.Scan(&a.ID, &a.Title, &a.Content, &a.IsAnony, &a.Time)
+			// tags
+			a.Tags = queryAskTagsByAskID(a.ID)
 			// 回答数
 			var askID = a.ID
-			var queryAnswerCountStr = fmt.Sprintf("select count(*) from ask_comment where ask_id=%v", askID)
+			var queryAnswerCountStr = fmt.Sprintf("select count(*) from ask_comment where ask_id=%v and reply_to=0", askID)
 			a.AnswerCount = utils.QueryDBRow(queryAnswerCountStr)
 			a.StarCount = common.GetCountByID(askID, "star", "ask")
 			al = append(al, a)
@@ -417,4 +445,76 @@ func queryAskList(featured bool, answer bool) askList {
 	}
 
 	return al
+}
+
+// 查询问答项
+func queryAskItem(askID int, uID int) *(common.AskItem) {
+	var queryStr string
+	var a common.AskItem
+	// 查询问答
+	queryStr = fmt.Sprintf("select id, title, content, is_anonymous, create_time, user_id from ask where id=%v", askID)
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		var authorID int
+		rows.Scan(&a.ID, &a.Title, &a.Content, &a.IsAnony, &a.Time, &authorID)
+		// 作者
+		if !a.IsAnony {
+			a.AuthorID = authorID
+			a.AuthorName = common.GetUserNameByID(authorID)
+		}
+		// 数目, isRead, isStar isLike
+		if uID != -1 {
+			isRead := common.CheckReadStarLike(uID, a.ID, "read", "ask")
+			isLike := common.CheckReadStarLike(uID, a.ID, "like", "ask")
+			isStar := common.CheckReadStarLike(uID, a.ID, "star", "ask")
+			a.IsRead = &isRead
+			a.IsLike = &isLike
+			a.IsStar = &isStar
+		} else {
+			a.IsRead = nil
+			a.IsLike = nil
+			a.IsStar = nil
+		}
+		var queryAnswerCountStr = fmt.Sprintf("select count(*) from ask_comment where ask_id=%v and reply_to=0", a.ID)
+		a.AnswerCount = utils.QueryDBRow(queryAnswerCountStr)
+		a.StarCount = common.GetCountByID(askID, "star", "ask")
+		a.LikeCount = common.GetCountByID(askID, "like", "ask")
+		a.ReadCount = common.GetCountByID(askID, "read", "ask")
+
+		// tags
+		a.Tags = queryAskTagsByAskID(a.ID)
+		// 回答
+		var cmts []common.AskComment
+		queryStr = fmt.Sprintf("select id, text, author, create_time from ask_comment where reply_to=0 and ask_id=%v", askID)
+		cmtRows := utils.QueryDB(queryStr)
+		for cmtRows.Next() {
+			var cmt common.AskComment
+			cmtRows.Scan(&cmt.ID, &cmt.Text, &cmt.AuthorID, &cmt.Time)
+			cmt.AuthorName = common.GetUserNameByID(cmt.AuthorID)
+
+			// 嵌套回答
+			var subCmts []common.AskComment
+			var querySubCmtsStr = fmt.Sprintf("select id, text, author, create_time, reply_to from ask_comment where ref=%v and ask_id=%v", cmt.ID, askID)
+			subCmtsRows := utils.QueryDB(querySubCmtsStr)
+			for subCmtsRows.Next() {
+				var sc common.AskComment
+				var replyID int
+				subCmtsRows.Scan(&sc.ID, &sc.Text, &sc.AuthorID, &sc.Time, &replyID)
+				sc.AuthorName = common.GetUserNameByID(sc.AuthorID)
+				var replyName = common.GetUserNameByID(replyID)
+				sc.ReplyTo = &replyName
+				subCmts = append(subCmts, sc)
+			}
+			cmt.SubComments = subCmts
+			subCmtsRows.Close()
+			cmts = append(cmts, cmt)
+		}
+		a.Comment = cmts
+
+		cmtRows.Close()
+		rows.Close()
+		return &a
+	}
+	rows.Close()
+	return nil
 }

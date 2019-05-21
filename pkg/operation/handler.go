@@ -260,7 +260,7 @@ func UpdateStarLikeHandler(w http.ResponseWriter, r *http.Request) {
 	refID, _ := strconv.Atoi(r.URL.Query().Get("refID"))
 	type1 := r.URL.Query().Get("type1")
 	type2 := r.URL.Query().Get("type2")
-	if refID <= 0 || (type1 != "star" && type1 != "like") || (type2 != "article" && type2 != "article_comment") {
+	if refID <= 0 || (type1 != "star" && type1 != "like") || (type2 != "article" && type2 != "article_comment" && type2 != "ask") {
 		http.Error(w, "status forbidden", http.StatusForbidden)
 		return
 	}
@@ -293,7 +293,7 @@ func ReadCountHandler(w http.ResponseWriter, r *http.Request) {
 	// validate
 	refID, _ := strconv.Atoi(r.URL.Query().Get("refID"))
 	ttype := r.URL.Query().Get("type")
-	if refID <= 0 || (ttype != "article") {
+	if refID <= 0 || (ttype != "article" && ttype != "ask") {
 		http.Error(w, "status forbidden", http.StatusForbidden)
 		return
 	}
@@ -331,6 +331,38 @@ func AddAskHandler(w http.ResponseWriter, r *http.Request) {
 		if success := addAsk(uid, formData); success {
 			resp.Code = 1
 			resp.Message = "ok"
+		} else {
+			resp.Code = 0
+			resp.Message = "新增失败"
+		}
+		resJSON, _ := json.Marshal(resp)
+		fmt.Fprintln(w, string(resJSON))
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+}
+
+// AddAskCommentHandler 增加问答帖子评论
+func AddAskCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		// 登录验证
+		var uid int
+		if uid, _ = common.IsUserLogin(r); uid == -1 {
+			http.Error(w, "Authentication failed", http.StatusUnauthorized)
+			return
+		}
+
+		var resp common.Response
+		var formData askCmtForm
+		res, _ := ioutil.ReadAll(r.Body)
+
+		err := json.Unmarshal(res, &formData)
+		utils.CheckErr(err)
+
+		if success, newID := addAskComment(uid, formData); success {
+			resp.Code = 1
+			resp.Message = "ok"
+			resp.Data = newID
 		} else {
 			resp.Code = 0
 			resp.Message = "新增失败"
