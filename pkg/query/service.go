@@ -518,3 +518,62 @@ func queryAskItem(askID int, uID int) *(common.AskItem) {
 	rows.Close()
 	return nil
 }
+
+func fuzzyQueryCounselor(keyword string) []common.Counselor {
+	var queryStr = "select id from counselor where name like '%" + keyword + "%' || topic_other like '%" + keyword + "%'"
+	var list []common.Counselor
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var id int
+		rows.Scan(&id)
+		list = append(list, *(queryCounselor(id)))
+	}
+	return list
+}
+
+func fuzzyQueryAsk(keyword string, uID int) []common.AskItem {
+	var queryStr = "select id from ask where title like '%" + keyword + "%'"
+	var list []common.AskItem
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var id int
+		rows.Scan(&id)
+		list = append(list, *(queryAskItem(id, uID)))
+	}
+	return list
+}
+
+func fuzzyQueryArticle(keyword string, uID int) []common.Article {
+	var queryStr = "select id from article where title like '%" + keyword + "%' || tags like '%" + keyword + "%'"
+	var list []common.Article
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var id int
+		rows.Scan(&id)
+		list = append(list, *(queryArticle(id, uID)))
+	}
+	return list
+}
+
+// 关键字查询 (咨询师，文章，问答)
+func fuzzyQuery(keyword string, ttype string, uID int) fuzzyList {
+	if keyword == "" {
+		return nil
+	}
+
+	var fuzzyList interface{}
+	switch ttype {
+	case "counselor":
+		fuzzyList = fuzzyQueryCounselor(keyword)
+		break
+	case "ask":
+		fuzzyList = fuzzyQueryAsk(keyword, uID)
+		break
+	case "article":
+		fuzzyList = fuzzyQueryArticle(keyword, uID)
+		break
+	default:
+		break
+	}
+	return fuzzyList
+}

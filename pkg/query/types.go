@@ -35,3 +35,5 @@ type articleQueryArgs struct {
 }
 
 type askList []common.AskItem
+
+type fuzzyList interface{}

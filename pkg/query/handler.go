@@ -294,3 +294,23 @@ func AskItemHandler(w http.ResponseWriter, r *http.Request) {
 	resJSON, _ := json.Marshal(resp)
 	fmt.Fprintln(w, string(resJSON))
 }
+
+// FuzzyQueryHandler 模糊全局搜索
+func FuzzyQueryHandler(w http.ResponseWriter, r *http.Request) {
+	var uid int
+	if uid, _ = common.IsUserLogin(r); uid == -1 {
+		http.Error(w, "Not Loggin", http.StatusUnauthorized)
+		return
+	}
+
+	var ttype = r.URL.Query().Get("type")
+	var keyword = r.URL.Query().Get("keyword")
+
+	var resp common.Response
+	resp.Code = 1
+	resp.Message = "ok"
+	resp.Data = fuzzyQuery(keyword, ttype, uid)
+	resJSON, _ := json.Marshal(resp)
+
+	fmt.Fprintln(w, string(resJSON))
+}
