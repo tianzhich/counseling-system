@@ -10,6 +10,12 @@ type filter struct {
 	City   []common.DictInfo `json:"city"`
 }
 
+type preAsk struct {
+	AskCmtCount  int `json:"askCmtCount"`
+	AskPostCount int `json:"askPostCount"`
+}
+
 type preInfo struct {
 	common.User
+	preAsk
 }

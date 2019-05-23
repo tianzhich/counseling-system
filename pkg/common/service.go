@@ -4,6 +4,7 @@ import (
 	"counseling-system/pkg/utils"
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 // GetAllDictInfoByTypeCode return the counseling cities, methods, topics
@@ -228,7 +229,7 @@ func GetTagByID(id int) *AskTag {
 	rows := utils.QueryDB(queryStr)
 	if rows.Next() {
 		var subTag AskTag
-		subTag.ID = string(id)
+		subTag.ID = strconv.Itoa(id)
 		rows.Scan(&subTag.Name, &at.ID, &at.Name)
 		at.SubTags = &([]AskTag{subTag})
 		rows.Close()

@@ -20,7 +20,22 @@ func getLogginUserInfo(uid int) preInfo {
 	if cid := common.GetCounselorIDByUID(uid); cid != -1 {
 		info.CID = &cid
 	}
+
+	// about ask
+	getUserAskInfo(uid, &info)
 	return info
+}
+
+func getUserAskInfo(uID int, pre *preInfo) {
+	var queryStr = fmt.Sprintf("select count(*) from ask where user_id=%v", uID)
+	var postCount, cmtCount int
+
+	postCount = utils.QueryDBRow(queryStr)
+	queryStr = fmt.Sprintf("select count(*) from ask_comment where author=%v and reply_to=0", uID)
+	cmtCount = utils.QueryDBRow(queryStr)
+
+	pre.AskCmtCount = cmtCount
+	pre.AskPostCount = postCount
 }
 
 func getLogginCounselorInfo(uid int) common.Counselor {

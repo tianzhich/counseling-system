@@ -279,6 +279,23 @@ func queryArticleList(args articleQueryArgs, p pagination) articleList {
 	return al
 }
 
+// 查询热门阅读文章前四篇
+func queryPopularList() []common.Article {
+	var queryStr = "select COUNT(*) AS count, ref_id from read_count WHERE type='article' GROUP BY `ref_id` ORDER BY count DESC LIMIT 4"
+	rows := utils.QueryDB(queryStr)
+	var list []common.Article
+
+	for rows.Next() {
+		var id int
+		var count int
+		rows.Scan(&count, &id)
+		if p := queryArticle(id, -1); p != nil {
+			list = append(list, *p)
+		}
+	}
+	return list
+}
+
 // 查询文章留言
 func queryArticleComment(aid int, uID int) []common.ArticleComment {
 	var queryStr = fmt.Sprintf("select id, text, create_time, author, ref from article_comment where a_id=%v", aid)

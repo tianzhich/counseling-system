@@ -314,3 +314,14 @@ func FuzzyQueryHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintln(w, string(resJSON))
 }
+
+// PopularListHandler 阅读最多文章
+func PopularListHandler(w http.ResponseWriter, r *http.Request) {
+	var resp common.Response
+	resp.Code = 1
+	resp.Message = "ok"
+	resp.Data = queryPopularList()
+
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintln(w, string(resJSON))
+}

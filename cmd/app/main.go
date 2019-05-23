@@ -54,6 +54,7 @@ func queryHandlers(mux *(mux.Router)) {
 	mux.HandleFunc("/api/query/askList", query.AskHandler)
 	mux.HandleFunc("/api/query/ask", query.AskItemHandler)
 	mux.HandleFunc("/api/query/search", query.FuzzyQueryHandler)
+	mux.HandleFunc("/api/query/popularList", query.PopularListHandler)
 }
 
 func operationHandlers(mux *(mux.Router)) {
