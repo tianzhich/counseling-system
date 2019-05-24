@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func addCounselingRecord(formData common.RecordForm, uid int) (string, bool) {
@@ -208,6 +209,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 				if args.Letter != nil && *(args.Letter) != "" {
 					no.Type = "letter"
 					no.Title = fmt.Sprintf("您收到来自 %v 的一封感谢信，点击查看", visitorName)
+					updateLetterTime(recordID)
 				}
 			} else {
 				return 0, "非法操作，只能确认评价"
@@ -223,6 +225,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 			if args.Letter != nil {
 				updateStr += fmt.Sprintf(", letter=? where id=%v", recordID)
 				utils.UpdateDB(updateStr, "finish", *(args.Letter))
+				updateLetterTime(recordID)
 				no.Type = "letter"
 				no.Title = fmt.Sprintf("您收到来自 %v 的一封感谢信，点击查看", visitorName)
 			} else {
@@ -415,4 +418,15 @@ func addAskComment(uID int, f askCmtForm) (bool, int) {
 		}
 	}
 	return true, int(addCmtID)
+}
+
+// 更新感谢信时间
+func updateLetterTime(id int) {
+	var updateStr = fmt.Sprintf("update counseling_record set letter_time=? where id=%v", id)
+	t := time.Now()
+	var timeStr = t.Format("2006-01-02 15:04:05")
+
+	if success := utils.UpdateDB(updateStr, timeStr); !success {
+		fmt.Println("更新感谢信时间，数据库操作失败")
+	}
 }

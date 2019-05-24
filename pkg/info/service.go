@@ -23,11 +23,11 @@ func getLogginUserInfo(uid int) preInfo {
 	}
 
 	// about ask
-	getUserAskInfo(uid, &info)
+	getUserAskCountInfo(uid, &info)
 	return info
 }
 
-func getUserAskInfo(uID int, pre *preInfo) {
+func getUserAskCountInfo(uID int, pre *preInfo) {
 	var queryStr = fmt.Sprintf("select count(*) from ask where user_id=%v", uID)
 	var postCount, cmtCount int
 

@@ -118,6 +118,10 @@ func queryCounselors(p pagination, option *filterOption, orderBy string, like st
 		}
 		c.Topic = *(common.GetDictInfoByID(topicID))
 
+		// rate
+		rate := queryServiceRate(c.ID)
+		c.GoodRate = &rate
+
 		counselorList = append(counselorList, c)
 	}
 	rows.Close()
@@ -142,6 +146,17 @@ func queryCounselor(id int) *(common.Counselor) {
 			c.City = common.GetDictInfoByID(*cityID)
 		}
 		c.Topic = *(common.GetDictInfoByID(topicID))
+
+		// thanks letter
+		letters, lCount := queryServiceLetter(c.ID)
+		c.Letters = letters
+		c.LettersCount = lCount
+		// service count
+		c.ServiceCount = queryServiceCount(c.ID)
+		// rate
+		rate := queryServiceRate(c.ID)
+		c.GoodRate = &rate
+
 		rows.Close()
 		return &c
 	}
@@ -593,4 +608,56 @@ func fuzzyQuery(keyword string, ttype string, uID int) fuzzyList {
 		break
 	}
 	return fuzzyList
+}
+
+// 查询咨询师服务人数
+func queryServiceCount(cID int) int {
+	var count int
+	var queryStr = fmt.Sprintf("select count(*) from counseling_record where c_id=%v", cID)
+	count = utils.QueryDBRow(queryStr)
+
+	return count
+}
+
+// 查询咨询师服务好评率
+func queryServiceRate(cID int) float64 {
+	var rating float64
+	var count float64
+	var sum float64
+	var queryStr = fmt.Sprintf("select rating_score from counseling_record where c_id=%v and status='finish' and rating_score!=-1", cID)
+
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		count++
+		var rate float64
+		rows.Scan(&rate)
+		sum += rate
+	}
+	rows.Close()
+
+	if count == 0 {
+		return 1.00
+	}
+
+	rating = sum / (5 * count)
+	value, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", rating), 64)
+	return value
+}
+
+// 查询咨询师感谢信
+func queryServiceLetter(cID int) ([]common.ThankLetter, int) {
+	var count int
+	var queryStr = fmt.Sprintf("select id, letter, letter_time from counseling_record where c_id=%v and letter != ''", cID)
+	var ls []common.ThankLetter
+
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var l common.ThankLetter
+		rows.Scan(&l.ID, &l.Text, &l.Time)
+		ls = append(ls, l)
+		count++
+	}
+	rows.Close()
+
+	return ls, count
 }

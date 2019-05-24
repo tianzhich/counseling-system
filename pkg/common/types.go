@@ -70,21 +70,24 @@ type Message struct {
 
 // Counselor info
 type Counselor struct {
-	ID          int       `json:"id"`
-	UID         int       `json:"uid"`
-	Name        string    `json:"name"`
-	Gender      int       `json:"gender"`
-	Description string    `json:"description"`
-	WorkYears   int       `json:"workYears"`
-	GoodRate    *int      `json:"goodRate"`
-	Motto       string    `json:"motto"`
-	AudioPrice  int       `json:"audioPrice"`
-	VideoPrice  int       `json:"videoPrice"`
-	FtfPrice    int       `json:"ftfPrice"`
-	City        *DictInfo `json:"city"`
-	Topic       DictInfo  `json:"topic"`
-	TopicOther  string    `json:"topicOther"`
-	ApplyTime   string    `json:"applyTime"`
+	ID           int           `json:"id"`
+	UID          int           `json:"uid"`
+	Name         string        `json:"name"`
+	Gender       int           `json:"gender"`
+	Description  string        `json:"description"`
+	WorkYears    int           `json:"workYears"`
+	GoodRate     *float64      `json:"goodRate"`
+	Motto        string        `json:"motto"`
+	AudioPrice   int           `json:"audioPrice"`
+	VideoPrice   int           `json:"videoPrice"`
+	FtfPrice     int           `json:"ftfPrice"`
+	City         *DictInfo     `json:"city"`
+	Topic        DictInfo      `json:"topic"`
+	TopicOther   string        `json:"topicOther"`
+	ApplyTime    string        `json:"applyTime"`
+	Letters      []ThankLetter `json:"letters"`
+	ServiceCount int           `json:"serviceCount"`
+	LettersCount int           `json:"lettersCount"`
 }
 
 // User info
@@ -192,4 +195,11 @@ type AskItem struct {
 	Tags          []AskTag     `json:"tags"`
 	RecentComment *AskComment  `json:"recentComment"`
 	Comment       []AskComment `json:"askComment"`
+}
+
+// ThankLetter 感谢信
+type ThankLetter struct {
+	ID   int    `json:"id"`
+	Time string `json:"time"`
+	Text string `json:"text"`
 }
