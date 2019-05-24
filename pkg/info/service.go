@@ -2,6 +2,7 @@ package info
 
 import (
 	"counseling-system/pkg/common"
+	"counseling-system/pkg/query"
 	"counseling-system/pkg/utils"
 	"fmt"
 	"strconv"
@@ -102,4 +103,104 @@ func getAskTags() []common.AskTag {
 		at[index].SubTags = &subAt
 	}
 	return at
+}
+
+func getMyArticleList(uid int) myArticleList {
+	var cID int
+	var list myArticleList
+	cID = common.GetCounselorIDByUID(uid)
+
+	// counselor
+	if cID != -1 {
+		var cmtList []common.Article
+		var postList []common.Article
+		var queryStr = fmt.Sprintf("select id from article where is_draft=0 and c_id=%v", cID)
+
+		// posted article
+		prows := utils.QueryDB(queryStr)
+		for prows.Next() {
+			var aid int
+			var a common.Article
+			prows.Scan(&aid)
+			if p := query.QueryArticle(aid, -1); p != nil {
+				a = *p
+			}
+			postList = append(postList, a)
+		}
+		list.PostArticleList = &postList
+		prows.Close()
+
+		// cmted list
+		queryStr = fmt.Sprintf("select a_id from article_comment where author=%v GROUP BY a_id", uid)
+		crows := utils.QueryDB(queryStr)
+		for crows.Next() {
+			var aid int
+			var a common.Article
+			crows.Scan(&aid)
+			if p := query.QueryArticle(aid, -1); p != nil {
+				a = *p
+			}
+			cmtList = append(cmtList, a)
+		}
+		list.CmtArticleList = cmtList
+		crows.Close()
+		return list
+	}
+
+	// user
+	var userList []common.Article
+	// cmted list
+	queryStr := fmt.Sprintf("select a_id from article_comment where author=%v GROUP BY a_id", uid)
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var aid int
+		var a common.Article
+		rows.Scan(&aid)
+		if p := query.QueryArticle(aid, -1); p != nil {
+			a = *p
+		}
+		userList = append(userList, a)
+	}
+	list.CmtArticleList = userList
+	rows.Close()
+	return list
+}
+
+func getMyAskList(uid int) myAskList {
+	var queryStr string
+	var list myAskList
+
+	// post
+	queryStr = fmt.Sprintf("select id from ask where user_id=%v", uid)
+	prows := utils.QueryDB(queryStr)
+	var plist []common.AskItem
+	for prows.Next() {
+		var a common.AskItem
+		var aid int
+		prows.Scan(&aid)
+		if p := query.QueryAskItem(aid, -1); p != nil {
+			a = *p
+			plist = append(plist, a)
+		}
+	}
+	list.PostAskList = plist
+	prows.Close()
+
+	// cmt
+	queryStr = fmt.Sprintf("select ask_id from ask_comment where author=%v GROUP BY ask_id", uid)
+	crows := utils.QueryDB(queryStr)
+	var clist []common.AskItem
+	for crows.Next() {
+		var a common.AskItem
+		var aid int
+		crows.Scan(&aid)
+		if p := query.QueryAskItem(aid, -1); p != nil {
+			a = *p
+			clist = append(clist, a)
+		}
+	}
+	list.CmtAskList = clist
+	crows.Close()
+
+	return list
 }

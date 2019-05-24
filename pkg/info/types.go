@@ -19,3 +19,13 @@ type preInfo struct {
 	common.User
 	preAsk
 }
+
+type myArticleList struct {
+	PostArticleList *[]common.Article `json:"postArticleList"`
+	CmtArticleList  []common.Article  `json:"cmtArticleList"`
+}
+
+type myAskList struct {
+	PostAskList []common.AskItem `json:"postAskList"`
+	CmtAskList  []common.AskItem `json:"cmtAskList"`
+}

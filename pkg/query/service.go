@@ -289,7 +289,7 @@ func queryPopularList() []common.Article {
 		var id int
 		var count int
 		rows.Scan(&count, &id)
-		if p := queryArticle(id, -1); p != nil {
+		if p := QueryArticle(id, -1); p != nil {
 			list = append(list, *p)
 		}
 	}
@@ -345,8 +345,8 @@ func queryArticleCommentRefByID(id int) *(common.ArticleComment) {
 	return nil
 }
 
-// 查询文章，按id查询
-func queryArticle(id int, uID int) *(common.Article) {
+// QueryArticle 查询文章，按id查询
+func QueryArticle(id int, uID int) *(common.Article) {
 	var queryStr = fmt.Sprintf("select id, cover, title, excerpt, content, category, tags, c_id, update_time from article where is_draft=0 and id=%v", id)
 	var a common.Article
 
@@ -464,8 +464,8 @@ func queryAskList(featured bool, answer bool) askList {
 	return al
 }
 
-// 查询问答项
-func queryAskItem(askID int, uID int) *(common.AskItem) {
+// QueryAskItem 查询问答项
+func QueryAskItem(askID int, uID int) *(common.AskItem) {
 	var queryStr string
 	var a common.AskItem
 	// 查询问答
@@ -555,7 +555,7 @@ func fuzzyQueryAsk(keyword string, uID int) []common.AskItem {
 	for rows.Next() {
 		var id int
 		rows.Scan(&id)
-		list = append(list, *(queryAskItem(id, uID)))
+		list = append(list, *(QueryAskItem(id, uID)))
 	}
 	return list
 }
@@ -567,7 +567,7 @@ func fuzzyQueryArticle(keyword string, uID int) []common.Article {
 	for rows.Next() {
 		var id int
 		rows.Scan(&id)
-		list = append(list, *(queryArticle(id, uID)))
+		list = append(list, *(QueryArticle(id, uID)))
 	}
 	return list
 }

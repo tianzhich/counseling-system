@@ -40,6 +40,8 @@ func infoHandlers(mux *(mux.Router)) {
 	mux.HandleFunc("/api/info/preCounselor", info.PreCounselorHandler)
 	mux.HandleFunc("/api/info/articleDraft", info.ArticleDraftHandler)
 	mux.HandleFunc("/api/info/askTags", info.AskTagsHandler)
+	mux.HandleFunc("/api/info/myArticleList", info.MyArticleListHandler)
+	mux.HandleFunc("/api/info/myAskList", info.MyAskListHandler)
 }
 
 func queryHandlers(mux *(mux.Router)) {

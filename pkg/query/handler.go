@@ -230,7 +230,7 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 	// 查询单个
 	var a *(common.Article)
 	uid, _ := common.IsUserLogin(r) // 用于查询文章已读状态
-	if a = queryArticle(aID, uid); a != nil {
+	if a = QueryArticle(aID, uid); a != nil {
 		resp.Code = 1
 		resp.Message = "ok"
 		resp.Data = *a
@@ -278,7 +278,7 @@ func AskItemHandler(w http.ResponseWriter, r *http.Request) {
 	var resp common.Response
 	if askID > 0 {
 		uid, _ := common.IsUserLogin(r)
-		if askItem := queryAskItem(askID, uid); askItem != nil {
+		if askItem := QueryAskItem(askID, uid); askItem != nil {
 			resp.Code = 1
 			resp.Message = "ok"
 			resp.Data = &askItem

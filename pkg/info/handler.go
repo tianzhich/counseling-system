@@ -102,3 +102,37 @@ func AskTagsHandler(w http.ResponseWriter, r *http.Request) {
 	resJSON, _ := json.Marshal(resp)
 	fmt.Fprintln(w, string(resJSON))
 }
+
+// MyArticleListHandler 获取我的问题
+func MyArticleListHandler(w http.ResponseWriter, r *http.Request) {
+	var uid int
+	if uid, _ = common.IsUserLogin(r); uid == -1 {
+		http.Error(w, "Authentication failed", http.StatusUnauthorized)
+		return
+	}
+
+	var resp common.Response
+	resp.Code = 1
+	resp.Message = "ok"
+	resp.Data = getMyArticleList(uid)
+
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintln(w, string(resJSON))
+}
+
+// MyAskListHandler 获取我的问题
+func MyAskListHandler(w http.ResponseWriter, r *http.Request) {
+	var uid int
+	if uid, _ = common.IsUserLogin(r); uid == -1 {
+		http.Error(w, "Authentication failed", http.StatusUnauthorized)
+		return
+	}
+
+	var resp common.Response
+	resp.Code = 1
+	resp.Message = "ok"
+	resp.Data = getMyAskList(uid)
+
+	resJSON, _ := json.Marshal(resp)
+	fmt.Fprintln(w, string(resJSON))
+}
