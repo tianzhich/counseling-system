@@ -29,12 +29,12 @@ func CounselorListHandler(w http.ResponseWriter, r *http.Request) {
 		// filters data body
 		res, _ := ioutil.ReadAll(r.Body)
 		if string(res) == "" {
-			pp, counselors = queryCounselors(p, nil, "ORDER BY create_time", like)
+			pp, counselors = queryCounselors(p, nil, false, like)
 		} else {
 			var option *filterOption
 			err = json.Unmarshal(res, &option)
 			utils.CheckErr(err)
-			pp, counselors = queryCounselors(p, option, "ORDER BY create_time", like)
+			pp, counselors = queryCounselors(p, option, false, like)
 		}
 
 		var resp common.Response
@@ -65,7 +65,7 @@ func NewlyCounselorsHandler(w http.ResponseWriter, r *http.Request) {
 	var pp pagination
 	var counselors []common.Counselor
 
-	pp, counselors = queryCounselors(p, nil, "ORDER BY create_time DESC", "")
+	pp, counselors = queryCounselors(p, nil, true, "")
 
 	var resp common.Response
 	resp.Code = 1
@@ -230,7 +230,7 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 	// 查询单个
 	var a *(common.Article)
 	uid, _ := common.IsUserLogin(r) // 用于查询文章已读状态
-	if a = QueryArticle(aID, uid); a != nil {
+	if a = common.QueryArticle(aID, uid); a != nil {
 		resp.Code = 1
 		resp.Message = "ok"
 		resp.Data = *a

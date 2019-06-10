@@ -97,7 +97,7 @@ func applyCounselor(form common.CounselorForm, uid int) (string, bool) {
 			common.HandleApplyCity(form.City, uid)
 			handleApplyUserType(uid)
 			handleApplyTopic(form.Topic, form.OtherTopic, uid)
-			handleApplyDetail(int(cid), form.Detail)
+			handleApplyDetail(int(cid), form.Details)
 		} else {
 			fmt.Println("新增咨询师失败，数据库插入错误！")
 			return "", false

@@ -238,3 +238,130 @@ func GetTagByID(id int) *AskTag {
 	rows.Close()
 	return nil
 }
+
+// QueryArticleComment 查询文章留言
+func QueryArticleComment(aid int, uID int) []ArticleComment {
+	var queryStr = fmt.Sprintf("select id, text, create_time, author, ref from article_comment where a_id=%v", aid)
+	var cmts []ArticleComment
+
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var cmt ArticleComment
+		var ref *int
+		rows.Scan(&cmt.ID, &cmt.Text, &cmt.PostTime, &cmt.AuthorID, ref)
+		// handle ref
+		if ref == nil {
+			cmt.Ref = nil
+		} else {
+			cmt.Ref = QueryArticleCommentRefByID(*(ref))
+		}
+		// handle authorName
+		cmt.AuthorName = GetUserNameByID(cmt.AuthorID)
+		// handle isLike
+		if uID != -1 {
+			isLike := CheckReadStarLike(uID, cmt.ID, "like", "article_comment")
+			cmt.IsLike = &isLike
+		} else {
+			cmt.IsLike = nil
+		}
+		// handle like count
+		cmt.LikeCount = GetCountByID(cmt.ID, "like", "article_comment")
+
+		cmts = append(cmts, cmt)
+	}
+	rows.Close()
+	return cmts
+}
+
+// QueryArticleCommentRefByID 查询文章留言，按ID查询
+func QueryArticleCommentRefByID(id int) *(ArticleComment) {
+	var queryStr = fmt.Sprintf("select id, text, create_time, author from article_comment where id=%v", id)
+	var cmt ArticleComment
+
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Scan(&cmt.ID, &cmt.Text, &cmt.PostTime, cmt.AuthorID)
+		rows.Close()
+		return &cmt
+	}
+	rows.Close()
+	return nil
+}
+
+// QueryArticle 查询文章，按id查询
+func QueryArticle(id int, uID int) *Article {
+	var queryStr = fmt.Sprintf("select id, cover, title, excerpt, content, category, tags, c_id, update_time from article where is_draft=0 and id=%v", id)
+	var a Article
+
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Scan(&a.ID, &a.Cover, &a.Title, &a.Excerpt, &a.Content, &a.Category, &a.Tags, &a.CID, &a.PostTime)
+		rows.Close()
+		a.AuthorName = GetCounselorNameByCID(a.CID)
+		// handle comment
+		a.Comment = QueryArticleComment(*(a.ID), uID)
+		// handle isRead, isStar isLike
+		if uID != -1 {
+			isRead := CheckReadStarLike(uID, *(a.ID), "read", "article")
+			isLike := CheckReadStarLike(uID, *(a.ID), "like", "article")
+			isStar := CheckReadStarLike(uID, *(a.ID), "star", "article")
+			a.IsRead = &isRead
+			a.IsLike = &isLike
+			a.IsStar = &isStar
+		} else {
+			a.IsRead = nil
+			a.IsLike = nil
+			a.IsStar = nil
+		}
+		// handle readCount
+		a.ReadCount = GetCountByID(*(a.ID), "read", "article")
+		// handle like count
+		a.LikeCount = GetCountByID(*(a.ID), "like", "article")
+		return &a
+	}
+	rows.Close()
+	return nil
+}
+
+// GetArticleListByCID 获得咨询师专栏文章
+func GetArticleListByCID(cid int) []Article {
+	var list []Article
+	var queryStr = fmt.Sprintf("select id from article where is_draft=0 and c_id=%v", cid)
+
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var aid int
+		var a Article
+		rows.Scan(&aid)
+		if p := QueryArticle(aid, -1); p != nil {
+			a = *p
+		}
+		list = append(list, a)
+	}
+
+	rows.Close()
+	return list
+}
+
+// GetAuthorID 获得作者userID，文章或问答
+func GetAuthorID(t string, id int) int {
+	var queryStr string
+	var authorID int
+	if t == "article" {
+		queryStr = fmt.Sprintf("select c_id from article where id=%v", id)
+	} else if t == "ask" {
+		queryStr = fmt.Sprintf("select user_id from ask where id=%v", id)
+	} else {
+		return -1
+	}
+
+	rows := utils.QueryDB(queryStr)
+	if rows.Next() {
+		rows.Scan(&authorID)
+	} else {
+		authorID = -1
+	}
+
+	rows.Close()
+	return authorID
+}

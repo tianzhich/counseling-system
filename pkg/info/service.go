@@ -122,7 +122,7 @@ func getMyArticleList(uid int) myArticleList {
 			var aid int
 			var a common.Article
 			prows.Scan(&aid)
-			if p := query.QueryArticle(aid, -1); p != nil {
+			if p := common.QueryArticle(aid, -1); p != nil {
 				a = *p
 			}
 			postList = append(postList, a)
@@ -137,7 +137,7 @@ func getMyArticleList(uid int) myArticleList {
 			var aid int
 			var a common.Article
 			crows.Scan(&aid)
-			if p := query.QueryArticle(aid, -1); p != nil {
+			if p := common.QueryArticle(aid, -1); p != nil {
 				a = *p
 			}
 			cmtList = append(cmtList, a)
@@ -156,7 +156,7 @@ func getMyArticleList(uid int) myArticleList {
 		var aid int
 		var a common.Article
 		rows.Scan(&aid)
-		if p := query.QueryArticle(aid, -1); p != nil {
+		if p := common.QueryArticle(aid, -1); p != nil {
 			a = *p
 		}
 		userList = append(userList, a)

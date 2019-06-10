@@ -32,29 +32,29 @@ type Notification struct {
 
 // RecordForm xxx(咨询记录)
 type RecordForm struct {
-	ID            int    `json:"id"`
-	CID           int    `json:"cID"`
-	CounselorName string `json:"counselorName"`
-	Method        string `json:"method"`
-	Times         int    `json:"times"`
-	Name          string `json:"name"`
-	Age           int    `json:"age"`
-	Gender        int    `json:"gender"`
-	Phone         string `json:"phone"`
-	ContactPhone  string `json:"contactPhone"`
-	ContactName   string `json:"contactName"`
-	ContactRel    string `json:"contactRel"`
-	Desc          string `json:"desc"`
-	Status        string `json:"status"`
-	CreateTime    string `json:"createTime"`
-	StartTime     string `json:"startTime"`
-	Location      string `json:"location"`
-	CancelReason1 string `json:"cancelReason1"`
-	CancelReason2 string `json:"cancelReason2"`
-	RatingScore   int    `json:"ratingScore"`
-	RatingText    string `json:"ratingText"`
-	Letter        string `json:"letter"`
-	Price         int    `json:"price"`
+	ID            int     `json:"id"`
+	CID           int     `json:"cID"`
+	CounselorName string  `json:"counselorName"`
+	Method        string  `json:"method"`
+	Times         int     `json:"times"`
+	Name          string  `json:"name"`
+	Age           int     `json:"age"`
+	Gender        int     `json:"gender"`
+	Phone         string  `json:"phone"`
+	ContactPhone  string  `json:"contactPhone"`
+	ContactName   string  `json:"contactName"`
+	ContactRel    string  `json:"contactRel"`
+	Desc          string  `json:"desc"`
+	Status        string  `json:"status"`
+	CreateTime    string  `json:"createTime"`
+	StartTime     string  `json:"startTime"`
+	Location      string  `json:"location"`
+	CancelReason1 string  `json:"cancelReason1"`
+	CancelReason2 string  `json:"cancelReason2"`
+	RatingScore   float64 `json:"ratingScore"`
+	RatingText    string  `json:"ratingText"`
+	Letter        string  `json:"letter"`
+	Price         int     `json:"price"`
 }
 
 // Message xxx(留言)
@@ -70,24 +70,26 @@ type Message struct {
 
 // Counselor info
 type Counselor struct {
-	ID           int           `json:"id"`
-	UID          int           `json:"uid"`
-	Name         string        `json:"name"`
-	Gender       int           `json:"gender"`
-	Description  string        `json:"description"`
-	WorkYears    int           `json:"workYears"`
-	GoodRate     *float64      `json:"goodRate"`
-	Motto        string        `json:"motto"`
-	AudioPrice   int           `json:"audioPrice"`
-	VideoPrice   int           `json:"videoPrice"`
-	FtfPrice     int           `json:"ftfPrice"`
-	City         *DictInfo     `json:"city"`
-	Topic        DictInfo      `json:"topic"`
-	TopicOther   string        `json:"topicOther"`
-	ApplyTime    string        `json:"applyTime"`
-	Letters      []ThankLetter `json:"letters"`
-	ServiceCount int           `json:"serviceCount"`
-	LettersCount int           `json:"lettersCount"`
+	ID           int               `json:"id"`
+	UID          int               `json:"uid"`
+	Name         string            `json:"name"`
+	Gender       int               `json:"gender"`
+	Description  string            `json:"description"`
+	WorkYears    int               `json:"workYears"`
+	GoodRate     *float64          `json:"goodRate"`
+	Motto        string            `json:"motto"`
+	AudioPrice   int               `json:"audioPrice"`
+	VideoPrice   int               `json:"videoPrice"`
+	FtfPrice     int               `json:"ftfPrice"`
+	City         *DictInfo         `json:"city"`
+	Topic        DictInfo          `json:"topic"`
+	TopicOther   string            `json:"topicOther"`
+	ApplyTime    string            `json:"applyTime"`
+	Letters      []ThankLetter     `json:"letters"`
+	ServiceCount int               `json:"serviceCount"`
+	LettersCount int               `json:"lettersCount"`
+	ArticleList  []Article         `json:"articleList"`
+	Details      []CounselorDetail `json:"details"`
 }
 
 // User info
@@ -107,7 +109,7 @@ type CounselorForm struct {
 	WorkYears   int               `json:"workYears"`
 	Description string            `json:"description"`
 	Motto       string            `json:"motto"`
-	Detail      []CounselorDetail `json:"detail"`
+	Details     []CounselorDetail `json:"details"`
 	AudioPrice  int               `json:"audioPrice"`
 	VideoPrice  int               `json:"videoPrice"`
 	FtfPrice    int               `json:"ftfPrice"`
@@ -116,8 +118,9 @@ type CounselorForm struct {
 	OtherTopic  string            `json:"otherTopic"`
 }
 
-// CounselorDetail xxx
+// CounselorDetail 咨询师详细信息
 type CounselorDetail struct {
+	ID      int    `json:"id"`
 	Title   string `json:"title"`
 	Content string `json:"content"`
 }

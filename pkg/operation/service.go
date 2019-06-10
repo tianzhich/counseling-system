@@ -106,7 +106,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 		if userType == 1 {
 			notifUID = uuID
 			if operation == 0 {
-				updateStr += fmt.Sprintf(", cancel_reason1=? where id=%v", recordID)
+				updateStr += fmt.Sprintf(", cancel_reason2=? where id=%v", recordID)
 				if args.CancelReason2 != nil {
 					utils.UpdateDB(updateStr, "cancel", *(args.CancelReason2))
 					no.Title = fmt.Sprintf("咨询师 %v 取消了您的咨询请求，点击查看详情", counselorName)
@@ -134,12 +134,14 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 
 		// 咨询者操作
 		if userType == 2 {
+			notifUID = counselorUID
 			if operation == 1 {
 				return 0, "非法操作，咨询者无法主动协商咨询时间"
 			} else if operation == 0 {
 				if args.CancelReason1 != nil {
 					updateStr += fmt.Sprintf(", cancel_reason1=? where id=%v", recordID)
 					utils.UpdateDB(updateStr, "cancel", *(args.CancelReason1))
+					no.Title = fmt.Sprintf("%v 取消了咨询订单，点击查看详情", visitorName)
 				} else {
 					return 0, "取消理由不能为空" // 咨询者理由为选择项
 				}
@@ -183,6 +185,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 
 	case "wait_counseling":
 		if userType == 2 {
+			notifUID = counselorUID
 			if operation == 1 {
 				updateStr += fmt.Sprintf(" where id=%v", recordID)
 				utils.UpdateDB(updateStr, "wait_comment")
@@ -190,6 +193,7 @@ func appointProcess(uID int, userType int, recordID int, operation int, args pro
 				if args.CancelReason1 != nil {
 					updateStr += fmt.Sprintf(", cancel_reason1=? where id=%v", recordID)
 					utils.UpdateDB(updateStr, "cancel", args.CancelReason1)
+					no.Title = fmt.Sprintf("%v 取消了您的咨询，点击查看详情", visitorName)
 				} else {
 					return 0, "取消理由不能为空" // 此时取消不退款
 				}
@@ -302,6 +306,17 @@ func addArticleComment(uID int, cmt common.ArticleComment) (bool, int) {
 		fmt.Println("新增文章留言失败")
 		return false, -1
 	}
+
+	// 新增通知
+	var no common.Notification
+	var noUserName = common.GetUserNameByID(uID)
+	no.Type = "article"
+	no.Payload = cmt.AID
+	no.Title = noUserName + "评论了您的文章，点击查看详情"
+	if authorID := common.GetAuthorID("article", cmt.AID); authorID != -1 {
+		common.AddNotification(authorID, no)
+	}
+
 	return true, int(id)
 }
 
@@ -417,6 +432,17 @@ func addAskComment(uID int, f askCmtForm) (bool, int) {
 			return false, -1
 		}
 	}
+
+	// 新增通知
+	var no common.Notification
+	var noUserName = common.GetUserNameByID(uID)
+	no.Type = "ask"
+	no.Payload = f.AskID
+	no.Title = noUserName + "评论了您的问答，点击查看详情"
+	if authorID := common.GetAuthorID("ask", f.AskID); authorID != -1 {
+		common.AddNotification(authorID, no)
+	}
+
 	return true, int(addCmtID)
 }
 

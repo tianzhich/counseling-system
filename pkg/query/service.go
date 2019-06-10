@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// sort askList
 func (al askList) Len() int {
 	return len(al)
 }
@@ -19,8 +20,24 @@ func (al askList) Swap(i, j int) {
 	al[i], al[j] = al[j], al[i]
 }
 
+// sort counselor list
+func (cl counselorList) Len() int {
+	return len(cl)
+}
+func (cl counselorList) Less(i, j int) bool {
+	var iRate = *(cl[i].GoodRate)
+	var jRate = *(cl[j].GoodRate)
+	var iServe = float64(cl[i].ServiceCount)
+	var jServe = float64(cl[j].ServiceCount)
+
+	return iRate*iServe > jRate*jServe
+}
+func (cl counselorList) Swap(i, j int) {
+	cl[i], cl[j] = cl[j], cl[i]
+}
+
 // 咨询师列表
-func queryCounselors(p pagination, option *filterOption, orderBy string, like string) (pagination, []common.Counselor) {
+func queryCounselors(p pagination, option *filterOption, isNew bool, like string) (pagination, counselorList) {
 	var queryCountStr = "select count(*) from counselor"
 	var queryStr = "select id, u_id, name, gender, description, work_years, good_rate, motto, audio_price, video_price, ftf_price, city, topic, topic_other, create_time from counselor"
 
@@ -89,8 +106,10 @@ func queryCounselors(p pagination, option *filterOption, orderBy string, like st
 	queryCountStr = strings.TrimSuffix(queryCountStr, " and ")
 	queryStr = strings.TrimSuffix(queryStr, " and ")
 
-	// append using pagination and order
-	queryStr += fmt.Sprintf(" %v LIMIT %v,%v", orderBy, firstRecordIndex, p.PageSize)
+	// orderby
+	if isNew {
+		queryStr += " ORDER BY create_time DESC"
+	}
 
 	// db op
 	count := utils.QueryDBRow(queryCountStr)
@@ -102,7 +121,8 @@ func queryCounselors(p pagination, option *filterOption, orderBy string, like st
 		return pp, emptyCounslor
 	}
 
-	var counselorList []common.Counselor
+	var cl counselorList
+	var concatList counselorList
 	rows := utils.QueryDB(queryStr)
 	for rows.Next() {
 		var c common.Counselor
@@ -122,11 +142,24 @@ func queryCounselors(p pagination, option *filterOption, orderBy string, like st
 		rate := queryServiceRate(c.ID)
 		c.GoodRate = &rate
 
-		counselorList = append(counselorList, c)
+		// serviceCount
+		c.ServiceCount = queryServiceCount(c.ID)
+
+		cl = append(cl, c)
 	}
 	rows.Close()
 
-	return pp, counselorList
+	if !isNew {
+		sort.Sort(cl)
+	}
+
+	var start = firstRecordIndex
+	var end = firstRecordIndex + p.PageSize
+	if end > count {
+		end = count
+	}
+	concatList = cl[start:end]
+	return pp, concatList
 }
 
 func queryCounselor(id int) *(common.Counselor) {
@@ -156,6 +189,12 @@ func queryCounselor(id int) *(common.Counselor) {
 		// rate
 		rate := queryServiceRate(c.ID)
 		c.GoodRate = &rate
+
+		// post article
+		c.ArticleList = common.GetArticleListByCID(c.ID)
+
+		// details
+		c.Details = queryCounselorDetail(c.ID)
 
 		rows.Close()
 		return &c
@@ -262,7 +301,7 @@ func queryArticleList(args articleQueryArgs, p pagination) articleList {
 	}
 
 	// orderby
-	queryStr += " ORDER BY create_time"
+	queryStr += " ORDER BY create_time DESC"
 
 	// pagination
 	var firstRecordIndex = (p.PageNum - 1) * p.PageSize
@@ -304,95 +343,11 @@ func queryPopularList() []common.Article {
 		var id int
 		var count int
 		rows.Scan(&count, &id)
-		if p := QueryArticle(id, -1); p != nil {
+		if p := common.QueryArticle(id, -1); p != nil {
 			list = append(list, *p)
 		}
 	}
 	return list
-}
-
-// 查询文章留言
-func queryArticleComment(aid int, uID int) []common.ArticleComment {
-	var queryStr = fmt.Sprintf("select id, text, create_time, author, ref from article_comment where a_id=%v", aid)
-	var cmts []common.ArticleComment
-
-	rows := utils.QueryDB(queryStr)
-	for rows.Next() {
-		var cmt common.ArticleComment
-		var ref *int
-		rows.Scan(&cmt.ID, &cmt.Text, &cmt.PostTime, &cmt.AuthorID, ref)
-		// handle ref
-		if ref == nil {
-			cmt.Ref = nil
-		} else {
-			cmt.Ref = queryArticleCommentRefByID(*(ref))
-		}
-		// handle authorName
-		cmt.AuthorName = common.GetUserNameByID(cmt.AuthorID)
-		// handle isLike
-		if uID != -1 {
-			isLike := common.CheckReadStarLike(uID, cmt.ID, "like", "article_comment")
-			cmt.IsLike = &isLike
-		} else {
-			cmt.IsLike = nil
-		}
-		// handle like count
-		cmt.LikeCount = common.GetCountByID(cmt.ID, "like", "article_comment")
-
-		cmts = append(cmts, cmt)
-	}
-	rows.Close()
-	return cmts
-}
-
-// 查询文章留言，按ID查询
-func queryArticleCommentRefByID(id int) *(common.ArticleComment) {
-	var queryStr = fmt.Sprintf("select id, text, create_time, author from article_comment where id=%v", id)
-	var cmt common.ArticleComment
-
-	rows := utils.QueryDB(queryStr)
-	if rows.Next() {
-		rows.Scan(&cmt.ID, &cmt.Text, &cmt.PostTime, cmt.AuthorID)
-		rows.Close()
-		return &cmt
-	}
-	rows.Close()
-	return nil
-}
-
-// QueryArticle 查询文章，按id查询
-func QueryArticle(id int, uID int) *(common.Article) {
-	var queryStr = fmt.Sprintf("select id, cover, title, excerpt, content, category, tags, c_id, update_time from article where is_draft=0 and id=%v", id)
-	var a common.Article
-
-	rows := utils.QueryDB(queryStr)
-	if rows.Next() {
-		rows.Scan(&a.ID, &a.Cover, &a.Title, &a.Excerpt, &a.Content, &a.Category, &a.Tags, &a.CID, &a.PostTime)
-		rows.Close()
-		a.AuthorName = common.GetCounselorNameByCID(a.CID)
-		// handle comment
-		a.Comment = queryArticleComment(*(a.ID), uID)
-		// handle isRead, isStar isLike
-		if uID != -1 {
-			isRead := common.CheckReadStarLike(uID, *(a.ID), "read", "article")
-			isLike := common.CheckReadStarLike(uID, *(a.ID), "like", "article")
-			isStar := common.CheckReadStarLike(uID, *(a.ID), "star", "article")
-			a.IsRead = &isRead
-			a.IsLike = &isLike
-			a.IsStar = &isStar
-		} else {
-			a.IsRead = nil
-			a.IsLike = nil
-			a.IsStar = nil
-		}
-		// handle readCount
-		a.ReadCount = common.GetCountByID(*(a.ID), "read", "article")
-		// handle like count
-		a.LikeCount = common.GetCountByID(*(a.ID), "like", "article")
-		return &a
-	}
-	rows.Close()
-	return nil
 }
 
 // 查询文章标签
@@ -424,7 +379,7 @@ func queryAskList(featured bool, answer bool) askList {
 
 	// 最近回答优先
 	if answer == true {
-		queryCmtStr := "select id, text, author, create_time, ask_id from ask_comment where reply_to=0"
+		queryCmtStr := "select id, text, author, create_time, ask_id from ask_comment where reply_to=0 ORDER BY create_time DESC"
 		cmtRows := utils.QueryDB(queryCmtStr)
 		for cmtRows.Next() {
 			var a common.AskItem
@@ -454,7 +409,7 @@ func queryAskList(featured bool, answer bool) askList {
 		}
 		cmtRows.Close()
 	} else {
-		queryStr = "select id, title, content, is_anonymous, create_time from ask"
+		queryStr = "select id, title, content, is_anonymous, create_time from ask ORDER BY create_time DESC"
 		rows := utils.QueryDB(queryStr)
 		for rows.Next() {
 			var a common.AskItem
@@ -582,7 +537,7 @@ func fuzzyQueryArticle(keyword string, uID int) []common.Article {
 	for rows.Next() {
 		var id int
 		rows.Scan(&id)
-		list = append(list, *(QueryArticle(id, uID)))
+		list = append(list, *(common.QueryArticle(id, uID)))
 	}
 	return list
 }
@@ -660,4 +615,21 @@ func queryServiceLetter(cID int) ([]common.ThankLetter, int) {
 	rows.Close()
 
 	return ls, count
+}
+
+// 查询咨询师详细信息
+func queryCounselorDetail(cID int) []common.CounselorDetail {
+	var queryStr = fmt.Sprintf("select id, title, content from counselor_detail where c_id=%v", cID)
+	var details []common.CounselorDetail
+
+	rows := utils.QueryDB(queryStr)
+	for rows.Next() {
+		var d common.CounselorDetail
+		rows.Scan(&d.ID, &d.Title, &d.Content)
+
+		details = append(details, d)
+	}
+	rows.Close()
+
+	return details
 }
